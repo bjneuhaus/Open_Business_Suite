@@ -17,6 +17,7 @@ part of this vertical slice.
 from dataclasses import dataclass
 from enum import Enum
 
+from sovereign_business_suite.opencloud_image_config import OPENCLOUD_IMAGE_REF
 from sovereign_business_suite.services.command_runner import (
     CommandResult,
     CommandRunner,
@@ -29,7 +30,10 @@ class OpenCloudConfig:
 
     Attributes:
         image: Fully qualified container image reference, e.g.
-            ``"docker.io/opencloudeu/opencloud-rolling:latest"``.
+            ``"docker.io/opencloudeu/opencloud-rolling@sha256:..."``.
+            Use :func:`default_opencloud_config` to get an instance
+            pre-filled with the pinned digest from
+            ``config/opencloud-image.env``.
         container_name: Name given to the Podman container.
         host_port: Port on the host's ``127.0.0.1`` that is forwarded
             to the container's port 9200. The container is always
@@ -46,6 +50,36 @@ class OpenCloudConfig:
     host_port: int
     config_dir: str
     data_dir: str
+
+
+def default_opencloud_config(
+    config_dir: str, data_dir: str, host_port: int = 9200
+) -> OpenCloudConfig:
+    """Build the standard OpenCloudConfig using the pinned image digest.
+
+    Uses ``OPENCLOUD_IMAGE_REF`` from
+    ``sovereign_business_suite.opencloud_image_config`` (backed by the
+    single source of truth ``config/opencloud-image.env``) instead of
+    a floating tag, so repeated teardown/rebuild cycles use the exact
+    same, previously verified image.
+
+    Args:
+        config_dir: Absolute host path for OpenCloud's persistent
+            configuration.
+        data_dir: Absolute host path for OpenCloud's persistent data.
+        host_port: Port on ``127.0.0.1`` to bind. Defaults to ``9200``.
+
+    Returns:
+        An ``OpenCloudConfig`` with the container name fixed to
+        ``"opencloud"`` and the image pinned to ``OPENCLOUD_IMAGE_REF``.
+    """
+    return OpenCloudConfig(
+        image=OPENCLOUD_IMAGE_REF,
+        container_name="opencloud",
+        host_port=host_port,
+        config_dir=config_dir,
+        data_dir=data_dir,
+    )
 
 
 class OpenCloudStatus(Enum):

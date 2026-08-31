@@ -54,12 +54,17 @@ Vor Änderungen unbedingt [`AGENTS.md`](AGENTS.md) lesen.
 - ⚙️ `src/sovereign_business_suite/services/command_runner.py` –
   `CommandRunner`, generischer, testbarer `subprocess.run`-Wrapper
   ohne Shell-Interpolation (seit R007)
+- 🔒 [`config/opencloud-image.env`](config/opencloud-image.env) –
+  einzige Quelle der Wahrheit für den gepinnten OpenCloud-Image-Digest
+- 🔒 `src/sovereign_business_suite/opencloud_image_config.py` – lädt
+  `config/opencloud-image.env` und stellt `OPENCLOUD_IMAGE_REF` bereit
 - ☁️ `src/sovereign_business_suite/services/opencloud_service.py` –
   `OpenCloudService` mit `install()`/`status()`/`start()`/`stop()`
   für den OpenCloud-Container (seit R010–R014, Details in
   [`docs/opencloud-service.md`](docs/opencloud-service.md))
 - 📜 `scripts/provision_opencloud.sh` – einmaliges, manuelles
-  Infrastruktur-Skript (Podman-Paket, systemd-Linger, Verzeichnisse)
+  Infrastruktur-Skript (Podman-Paket, systemd-Linger, Verzeichnisse,
+  Pull des gepinnten Images)
 - Governance-Dokumente ([`PROJECT.md`](PROJECT.md), [`ROADMAP.md`](ROADMAP.md),
   [`WORKFLOW.md`](WORKFLOW.md), [`CODE_STYLE.md`](CODE_STYLE.md),
   [`DEFINITION_OF_DONE.md`](DEFINITION_OF_DONE.md),
@@ -170,6 +175,7 @@ R003 und folgt in einem späteren Roadmap-Punkt.
 | 🐳 | Podman-Integration |
 | ⚙️ | Command Execution |
 | ☁️ | OpenCloud-Service |
+| 🔒 | Gepinnter Image-Digest |
 | 📌 | Status |
 
 ## 📌 Status

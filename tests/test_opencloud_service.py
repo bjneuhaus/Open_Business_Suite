@@ -7,11 +7,13 @@ verification against the PoC VM happens separately (see
 docs/opencloud-service.md).
 """
 
+from sovereign_business_suite.opencloud_image_config import OPENCLOUD_IMAGE_REF
 from sovereign_business_suite.services.command_runner import CommandResult
 from sovereign_business_suite.services.opencloud_service import (
     OpenCloudConfig,
     OpenCloudService,
     OpenCloudStatus,
+    default_opencloud_config,
 )
 
 
@@ -132,3 +134,41 @@ def test_install_mounts_configured_config_and_data_directories() -> None:
     joined = " ".join(call)
     assert "/home/training/opencloud/opencloud-config:/etc/opencloud" in joined
     assert "/home/training/opencloud/opencloud-data:/var/lib/opencloud" in joined
+
+
+def test_default_opencloud_config_uses_pinned_image_digest() -> None:
+    """default_opencloud_config() must use the pinned digest, not a tag."""
+    config = default_opencloud_config(
+        config_dir="/home/training/opencloud/opencloud-config",
+        data_dir="/home/training/opencloud/opencloud-data",
+    )
+
+    assert config.image == OPENCLOUD_IMAGE_REF
+    assert "@sha256:" in config.image
+    assert config.container_name == "opencloud"
+    assert config.host_port == 9200
+
+
+def test_default_opencloud_config_allows_overriding_host_port() -> None:
+    """default_opencloud_config() must allow a custom host_port."""
+    config = default_opencloud_config(
+        config_dir="/home/training/opencloud/opencloud-config",
+        data_dir="/home/training/opencloud/opencloud-data",
+        host_port=9300,
+    )
+
+    assert config.host_port == 9300
+
+
+def test_install_uses_pinned_digest_image_from_default_config() -> None:
+    """install() must pass the pinned digest-based image to podman run."""
+    runner = FakeCommandRunner(CommandResult(returncode=0, stdout="", stderr=""))
+    config = default_opencloud_config(
+        config_dir="/home/training/opencloud/opencloud-config",
+        data_dir="/home/training/opencloud/opencloud-data",
+    )
+    service = OpenCloudService(config=config, command_runner=runner)
+
+    service.install()
+
+    assert OPENCLOUD_IMAGE_REF in runner.calls[0]
