@@ -22,3 +22,6 @@
   Root-README.md um Strukturübersicht ergänzt
 - R001: `requirements.txt` als bewusst leere Grundlage ergänzt; Inhalt
   folgt in R002 (Python-Projekt)
+- R001: README.md zur zentralen Einstiegsseite aufgewertet (Icons,
+  Inhaltsverzeichnis, lokale Verlinkungen auf alle Governance-Dokumente
+  inkl. Kurzerklärung von Roadmap/Workflow/Code Style, Icon-Legende)
