@@ -1,5 +1,7 @@
-# Zum Zeitpunkt von R001 (Repository-Struktur) bewusst leer.
+# Python 3.11+ (verifiziert: Python 3.11.16, lokal und Ziel-VM)
 #
-# Konkrete Python-Abhängigkeiten und Versionsentscheidungen werden erst
-# in R002 (Python-Projekt) festgelegt. Diese Datei markiert lediglich den
-# vorgesehenen Ort dafür.
+# Flask wird bereits in R002 als benoetigte Kern-Abhaengigkeit fuer die
+# spaetere Verwaltungsoberflaeche (R004) festgelegt und exakt gepinnt,
+# um nachvollziehbare, reproduzierbare Installationen zu gewaehrleisten.
+# Das Flask-Grundgeruest selbst (Routen, App-Factory) folgt erst in R004.
+Flask==3.1.3

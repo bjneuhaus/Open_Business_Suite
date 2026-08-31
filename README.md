@@ -26,12 +26,16 @@ OpenCloud. Details siehe [`PROJECT.md`](PROJECT.md).
 Vor Änderungen unbedingt [`AGENTS.md`](AGENTS.md) lesen.
 
 ## 📁 Repository-Struktur
-- 💻 [`src/`](src/README.md) – Anwendungscode (ab R002 befüllt)
-- 🧪 [`tests/`](tests/README.md) – automatisierte Tests (ab R002/R003 befüllt)
+- 💻 [`src/`](src/README.md) – Anwendungscode; enthält seit R002 das
+  installierbare Python-Paket `sovereign_business_suite`
+- 🧪 [`tests/`](tests/README.md) – automatisierte Tests (seit R002 ein
+  Import-Smoke-Test; feste pytest-Konfiguration folgt in R003)
 - 📄 [`docs/`](docs/README.md) – weiterführende technische Dokumentation zu
   einzelnen Implementierungen
-- 📦 [`requirements.txt`](requirements.txt) – Python-Abhängigkeiten (zunächst
-  leer, Inhalt folgt ab R002)
+- 📦 [`requirements.txt`](requirements.txt) – Python-Abhängigkeiten (seit
+  R002: Flask, exakt gepinnt für die spätere Verwaltungsoberfläche)
+- ⚙️ [`pyproject.toml`](pyproject.toml) – Paketmetadaten und Build-Backend
+  für `sovereign_business_suite` (seit R002)
 - Governance-Dokumente ([`PROJECT.md`](PROJECT.md), [`ROADMAP.md`](ROADMAP.md),
   [`WORKFLOW.md`](WORKFLOW.md), [`CODE_STYLE.md`](CODE_STYLE.md),
   [`DEFINITION_OF_DONE.md`](DEFINITION_OF_DONE.md),
