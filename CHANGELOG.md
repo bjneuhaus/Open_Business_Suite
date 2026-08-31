@@ -91,3 +91,16 @@
 - Service enthält bewusst keine Podman-, Prozess- oder
   Dateisystemaufrufe, keine Jobs, keine OpenCloud-Logik und keine
   allgemeine Plugin-Architektur (folgt in R006+)
+
+### Fix – R005-Follow-up: Route-zu-Service-Integrationstest
+- `tests/test_app.py::test_index_route_renders_platform_service_output`
+  ergänzt: ersetzt `PlatformService.get_platform_info()` per
+  `monkeypatch` durch einen eindeutigen Stand-in-Wert und prüft, dass
+  genau dieser Wert in der gerenderten `/`-Antwort erscheint
+- schließt die Lücke, dass die ursprünglichen R004/R005-Tests nur auf
+  Werte prüften, die zufällig mit den hartkodierten Service-Werten
+  übereinstimmten, ohne die tatsächliche Kopplung Route → Service zu
+  verifizieren
+- `tests/README.md` aktualisiert
+- kein Produktionscode geändert, kein neuer Roadmap-Punkt begonnen
+  (separater Fix-PR gemäß WORKFLOW.md: ein Punkt = ein Branch)
