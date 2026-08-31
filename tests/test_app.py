@@ -14,6 +14,10 @@ be identical to the service's hardcoded output.
 """
 
 from sovereign_business_suite.app import create_app
+from sovereign_business_suite.services.application_catalog_service import (
+    ApplicationCatalogEntry,
+    ApplicationCatalogService,
+)
 from sovereign_business_suite.services.platform_service import (
     PlatformInfo,
     PlatformService,
@@ -75,3 +79,28 @@ def test_index_route_renders_platform_service_output(monkeypatch) -> None:
 
     assert stand_in_info.project_name in html
     assert stand_in_info.status_message in html
+
+
+def test_catalog_route_renders_application_catalog_service_output(monkeypatch) -> None:
+    """GET /catalog must render the exact catalog service output."""
+    stand_in_applications = (
+        ApplicationCatalogEntry(
+            id="distinctive-catalog-id",
+            name="Distinctive Catalog Name",
+            description="Distinctive catalog description for integration.",
+        ),
+    )
+    monkeypatch.setattr(
+        ApplicationCatalogService,
+        "get_applications",
+        lambda self: stand_in_applications,
+    )
+
+    app = create_app()
+    response = app.test_client().get("/catalog")
+    html = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert stand_in_applications[0].id in html
+    assert stand_in_applications[0].name in html
+    assert stand_in_applications[0].description in html

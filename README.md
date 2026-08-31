@@ -62,6 +62,13 @@ Vor Änderungen unbedingt [`AGENTS.md`](AGENTS.md) lesen.
   `OpenCloudService` mit `install()`/`status()`/`start()`/`stop()`
   für den OpenCloud-Container (seit R010–R014, Details in
   [`docs/opencloud-service.md`](docs/opencloud-service.md))
+- 🗂️ `src/sovereign_business_suite/services/application_catalog_service.py` –
+  read-only `ApplicationCatalogService.get_applications()` mit
+  `ApplicationCatalogEntry` für den administratorseitigen
+  Anwendungskatalog (aktuell nur OpenCloud; seit R015, Details in
+  [`docs/application-catalog.md`](docs/application-catalog.md))
+- 🖥️ `src/sovereign_business_suite/templates/catalog.html` – serverseitiges
+  Template für den Katalog unter `/catalog` (seit R015)
 - 📜 `scripts/provision_opencloud.sh` – einmaliges, manuelles
   Infrastruktur-Skript (Podman-Paket, systemd-Linger, Verzeichnisse,
   Pull des gepinnten Images)
@@ -77,7 +84,11 @@ aktuellem Stand.
 ## 🚀 Anwendung starten
 Seit R004 existiert eine minimale Flask-Anwendung mit serverseitig
 gerenderter Startseite (`src/sovereign_business_suite/app.py`, Template
-unter `src/sovereign_business_suite/templates/index.html`).
+unter `src/sovereign_business_suite/templates/index.html`). Seit R015 gibt
+es zusätzlich `/catalog`: eine schreibgeschützte Übersicht der
+unterstützten Anwendungen (aktuell nur OpenCloud), erreichbar unter
+`http://127.0.0.1:5000/catalog`. Die bestehende Startseite unter `/` bleibt
+dabei unverändert.
 
 Lokaler Start (nach Einrichtung wie in [🧹 Code-Qualität](#-code-qualität)
 beschrieben):
@@ -99,13 +110,15 @@ ssh -L 5000:127.0.0.1:5000 <benutzer>@<vm-adresse>
 Danach im Browser auf dem eigenen Rechner `http://127.0.0.1:5000/`
 öffnen.
 
-**Erwartetes visuelles Ergebnis:** eine einfache HTML-Seite mit der
-Überschrift „Sovereign Business Suite“ und einem Hinweistext, der die
-Seite ausdrücklich als Proof of Concept (R004 – Flask-Grundgerüst)
-kennzeichnet. Es gibt noch keine Navigation, kein Styling und keine
-weitere Funktionalität — Authentifizierung, Datenbank, Podman-
-Integration, Jobs und ein `/health`-Endpoint sind bewusst nicht
-Bestandteil von R004.
+**Erwartetes visuelles Ergebnis:** Auf `/` erscheint weiterhin eine einfache
+HTML-Seite mit der Überschrift „Sovereign Business Suite“ und einem
+Hinweistext, der die Seite ausdrücklich als Proof of Concept (R004 –
+Flask-Grundgerüst) kennzeichnet. Der direkte Aufruf von `/catalog` zeigt
+zusätzlich die Überschrift „Anwendungskatalog“ und einen Eintrag für
+„OpenCloud“ mit Beschreibung. Beide Ansichten sind bewusst schlicht und
+ohne Styling. Authentifizierung, Datenbank, Lebenszyklus-Aktionen,
+Installation, Jobs und ein `/health`-Endpoint sind weiterhin nicht Teil
+von R015.
 
 ## 🧹 Code-Qualität
 Seit R003 sind Black (Formatierung), Ruff (Linting) und pytest (Tests) als
@@ -150,6 +163,8 @@ R003 und folgt in einem späteren Roadmap-Punkt.
   (Branches, Review, welche Dokumente vorher zu lesen sind).
 - 📝 [`CHANGELOG.md`](CHANGELOG.md) – chronologische Liste aller
   projektrelevanten Änderungen.
+- 🗂️ [`docs/application-catalog.md`](docs/application-catalog.md) –
+  technischer Vertrag und Scope des R015-Anwendungskatalogs.
 
 ## 🔤 Icon-Legende
 | Icon | Bedeutung |
@@ -176,6 +191,7 @@ R003 und folgt in einem späteren Roadmap-Punkt.
 | ⚙️ | Command Execution |
 | ☁️ | OpenCloud-Service |
 | 🔒 | Gepinnter Image-Digest |
+| 📋 | Application Catalog |
 | 📌 | Status |
 
 ## 📌 Status

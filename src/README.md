@@ -43,5 +43,14 @@ nutzt diesen Digest automatisch. Details, feste Konfiguration und der
 manuelle Bootstrap-Ablauf stehen in
 [`docs/opencloud-service.md`](../docs/opencloud-service.md).
 
+Seit R015 enthält das Paket außerdem
+`services/application_catalog_service.py`: `ApplicationCatalogService`
+mit `get_applications() -> tuple[ApplicationCatalogEntry, ...]` liefert
+für den serverseitigen Katalog die erste unterstützte Anwendung OpenCloud
+mit stabiler ID, Namen und administrativer Beschreibung. Der read-only
+Katalog wird über `GET /catalog` und
+`templates/catalog.html` angezeigt; Konfigurations- und Image-Details
+werden dabei nicht dupliziert.
+
 Ein Flask-Endpoint zur Steuerung dieser Services ist kein Bestandteil
 dieses Slices und folgt in einem späteren Roadmap-Punkt.
