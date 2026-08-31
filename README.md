@@ -44,6 +44,10 @@ Vor Änderungen unbedingt [`AGENTS.md`](AGENTS.md) lesen.
 - 🚀 `src/sovereign_business_suite/app.py` – minimale Flask-App-Factory
   mit serverseitig gerenderter Startseite (Template unter
   `src/sovereign_business_suite/templates/`, seit R004)
+- 🧩 `src/sovereign_business_suite/services/platform_service.py` –
+  Application Service Layer (`PlatformService`), erste Grenze zwischen
+  Web-Schicht und Plattformlogik (seit R005, Details in
+  [`docs/application-service-layer.md`](docs/application-service-layer.md))
 - Governance-Dokumente ([`PROJECT.md`](PROJECT.md), [`ROADMAP.md`](ROADMAP.md),
   [`WORKFLOW.md`](WORKFLOW.md), [`CODE_STYLE.md`](CODE_STYLE.md),
   [`DEFINITION_OF_DONE.md`](DEFINITION_OF_DONE.md),
@@ -150,6 +154,7 @@ R003 und folgt in einem späteren Roadmap-Punkt.
 | 📝 | Changelog |
 | 🧹 | Code-Qualität (Black, Ruff, pytest) |
 | 🚀 | Anwendung starten |
+| 🧩 | Application Service Layer |
 | 📌 | Status |
 
 ## 📌 Status

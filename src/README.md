@@ -19,5 +19,12 @@ die Startseite. Startbefehl, SSH-Tunnel-Beispiel und erwartetes
 visuelles Ergebnis stehen in der Root-`README.md`
 (Abschnitt „🚀 Anwendung starten“).
 
-Die Application Service Layer, Podman-Integration und die
-OpenCloud-Verwaltung folgen ab späteren Roadmap-Punkten.
+Seit R005 (Application Service Layer) enthält das Paket zusätzlich
+`services/platform_service.py`: die `PlatformService`-Klasse mit
+`get_platform_info() -> PlatformInfo` als erste Grenze zwischen der
+Flask-Webschicht und der eigentlichen Plattformlogik. Die Flask-Route in
+`app.py` ruft diesen Service auf, statt Texte selbst zu enthalten. Details
+siehe [`docs/application-service-layer.md`](../docs/application-service-layer.md).
+
+Die Podman-Integration und die OpenCloud-Verwaltung folgen ab späteren
+Roadmap-Punkten.
