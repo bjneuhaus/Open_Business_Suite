@@ -55,3 +55,20 @@
   Eintrag ergänzt; `tests/README.md` aktualisiert
 - `DEFINITION_OF_DONE.md` um konkrete Prüfbefehle ergänzt
 - Flask-Anwendung, Podman-Integration und CI bleiben außerhalb des Scopes
+
+### R004 – Flask-Grundgerüst
+- `src/sovereign_business_suite/app.py`: minimale Flask-App-Factory
+  `create_app()`, testbar per Flask-Testclient
+- `src/sovereign_business_suite/templates/index.html`: serverseitig
+  gerenderte Startseite mit Projekttitel und deutlichem PoC-Hinweis
+  (HTML als eigenes Template, keine große Inline-Zeichenkette)
+- `tests/test_app.py` (test-first): prüft `create_app()`, `GET /` mit
+  Statuscode 200 sowie sichtbaren Startseiteninhalt
+- lokaler Start standardmäßig auf `127.0.0.1`:
+  `python -m flask --app sovereign_business_suite.app run --host 127.0.0.1 --port 5000`
+- Root-`README.md` um Abschnitt „Anwendung starten“ (Startbefehl,
+  SSH-Tunnel-Beispiel, erwartetes visuelles Ergebnis) und
+  Inhaltsverzeichnis-Eintrag ergänzt; `src/README.md` und
+  `tests/README.md` aktualisiert
+- keine Authentifizierung, keine Datenbank, keine Podman-Integration,
+  keine Jobs, kein `/health`-Endpoint (folgt in späteren Roadmap-Punkten)
