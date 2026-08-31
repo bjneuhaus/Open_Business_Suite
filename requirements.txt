@@ -1,0 +1,5 @@
+# Zum Zeitpunkt von R001 (Repository-Struktur) bewusst leer.
+#
+# Konkrete Python-Abhängigkeiten und Versionsentscheidungen werden erst
+# in R002 (Python-Projekt) festgelegt. Diese Datei markiert lediglich den
+# vorgesehenen Ort dafür.
