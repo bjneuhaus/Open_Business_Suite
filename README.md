@@ -48,6 +48,9 @@ Vor Änderungen unbedingt [`AGENTS.md`](AGENTS.md) lesen.
   Application Service Layer (`PlatformService`), erste Grenze zwischen
   Web-Schicht und Plattformlogik (seit R005, Details in
   [`docs/application-service-layer.md`](docs/application-service-layer.md))
+- 🐳 `src/sovereign_business_suite/services/podman_service.py` –
+  `PodmanService.is_available()`, prüft nur `shutil.which("podman")`
+  (seit R006, Details in [`docs/podman-availability.md`](docs/podman-availability.md))
 - Governance-Dokumente ([`PROJECT.md`](PROJECT.md), [`ROADMAP.md`](ROADMAP.md),
   [`WORKFLOW.md`](WORKFLOW.md), [`CODE_STYLE.md`](CODE_STYLE.md),
   [`DEFINITION_OF_DONE.md`](DEFINITION_OF_DONE.md),
@@ -155,6 +158,7 @@ R003 und folgt in einem späteren Roadmap-Punkt.
 | 🧹 | Code-Qualität (Black, Ruff, pytest) |
 | 🚀 | Anwendung starten |
 | 🧩 | Application Service Layer |
+| 🐳 | Podman-Integration |
 | 📌 | Status |
 
 ## 📌 Status

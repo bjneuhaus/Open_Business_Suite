@@ -22,6 +22,12 @@ per `monkeypatch`, dass die Route `/` tatsächlich das ersetzt, was der
 Service liefert (Web-Schicht-zu-Service-Integrationstest) — nicht nur
 zufällig identische, hartkodierte Werte.
 
+Seit R006 (Podman Integration) prüft `test_podman_service.py` per
+`monkeypatch` von `shutil.which`, dass `PodmanService.is_available()`
+korrekt zwischen vorhandenem und fehlendem `podman`-Befehl unterscheidet
+und exakt nach dem Namen `"podman"` sucht. Es findet kein echter
+Prozessaufruf statt.
+
 Die Tests testen bewusst keine weitere Anwendungslogik (Authentifizierung,
 Datenbank, Podman-Integration, Jobs), da diese erst ab späteren
 Roadmap-Punkten entsteht.

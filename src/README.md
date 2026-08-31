@@ -26,5 +26,10 @@ Flask-Webschicht und der eigentlichen Plattformlogik. Die Flask-Route in
 `app.py` ruft diesen Service auf, statt Texte selbst zu enthalten. Details
 siehe [`docs/application-service-layer.md`](../docs/application-service-layer.md).
 
-Die Podman-Integration und die OpenCloud-Verwaltung folgen ab späteren
-Roadmap-Punkten.
+Seit R006 (Podman Integration) enthält das Paket zusätzlich
+`services/podman_service.py`: die `PodmanService`-Klasse mit
+`is_available() -> bool`, die ausschließlich prüft, ob der
+`podman`-Befehl auf dem `PATH` des Hosts gefunden wird. Details siehe
+[`docs/podman-availability.md`](../docs/podman-availability.md).
+
+Die OpenCloud-Verwaltung folgt ab späteren Roadmap-Punkten.
