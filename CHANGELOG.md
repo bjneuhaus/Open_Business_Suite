@@ -103,4 +103,22 @@
   verifizieren
 - `tests/README.md` aktualisiert
 - kein Produktionscode geändert, kein neuer Roadmap-Punkt begonnen
-  (separater Fix-PR gemäß WORKFLOW.md: ein Punkt = ein Branch)
+  (separater Fix-PR gemäß WORKFLOW.md: ein Roadmap-Punkt = ein Branch)
+
+### R006 – Podman Integration
+- `src/sovereign_business_suite/services/podman_service.py`:
+  `PodmanService.is_available() -> bool`, prüft ausschließlich
+  `shutil.which("podman")` — kein `subprocess`, kein Versionsaufruf,
+  keine Container-Aktionen (bewusst reduzierter Umfang, mit @chantal
+  abgestimmt)
+- `tests/test_podman_service.py` (test-first): deckt vorhandenes und
+  fehlendes Podman sowie den exakten Executable-Namen per `monkeypatch`
+  ab, ohne echten Prozessaufruf
+- `docs/podman-availability.md`: Notiz zu Scope-Grenze (R007/R012+
+  bleiben außen vor) und Verifikation auf der Ziel-VM
+- auf der PoC-Ziel-VM bestätigt: `podman` ist dort noch nicht
+  installiert (`which podman` liefert keinen Treffer);
+  `is_available()` würde dort korrekt `False` liefern
+- README.md, src/README.md, tests/README.md aktualisiert
+- keine Installation von Podman auf der VM, keine Prozessaufrufe, keine
+  Container-Operationen (folgt in R007 bzw. R012+)
