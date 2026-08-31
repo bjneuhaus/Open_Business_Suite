@@ -7,6 +7,14 @@ Der erste PoC richtet sich an eine kleine Gruppe oder ein Unternehmen mit bis zu
 ## Für AI/Coding Agents
 Vor Änderungen unbedingt `AGENTS.md` lesen.
 
+## Repository-Struktur
+- `src/` – Anwendungscode (ab R002 befüllt)
+- `tests/` – automatisierte Tests (ab R002/R003 befüllt)
+- `docs/` – weiterführende technische Dokumentation zu einzelnen Implementierungen
+- Governance-Dokumente (`PROJECT.md`, `ROADMAP.md`, `WORKFLOW.md`, `CODE_STYLE.md`, `DEFINITION_OF_DONE.md`, `CONTRIBUTING.md`, `AGENTS.md`) bleiben im Repository-Root
+
+Jedes der drei Verzeichnisse enthält eine eigene `README.md` mit Zweck und aktuellem Stand.
+
 ## Dokumente
 - `PROJECT.md`
 - `ROADMAP.md`
