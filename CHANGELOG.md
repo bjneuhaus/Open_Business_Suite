@@ -122,3 +122,34 @@
 - README.md, src/README.md, tests/README.md aktualisiert
 - keine Installation von Podman auf der VM, keine Prozessaufrufe, keine
   Container-Operationen (folgt in R007 bzw. R012+)
+
+### R007–R014 – OpenCloud-Vertical-Slice (Command Execution, Podman-Voraussetzungen, OpenCloud-Lebenszyklus)
+- `src/sovereign_business_suite/services/command_runner.py`:
+  `CommandRunner`/`CommandResult` als generischer, testbarer
+  `subprocess.run`-Wrapper (keine Shell-Interpolation, kein Raise bei
+  Nicht-Null-Returncode oder Timeout)
+- `src/sovereign_business_suite/services/opencloud_service.py`:
+  `OpenCloudConfig`/`OpenCloudStatus`/`OpenCloudService` mit
+  `install()`, `status()`, `start()`, `stop()`, `remove_container()`;
+  Container wird ausschließlich an `127.0.0.1` gebunden, rootless
+  (`--userns=keep-id`), mit persistenten Config-/Datenverzeichnissen
+- `scripts/provision_opencloud.sh`: einmaliges, manuelles, idempotentes
+  Infrastruktur-Skript (Podman-Paketinstallation, systemd-Linger,
+  Verzeichnisanlage) — bewusst außerhalb der Python-Anwendung (kein
+  `sudo`/`apt` aus dem Code heraus)
+- `tests/test_command_runner.py`, `tests/test_opencloud_service.py`
+  (test-first): vollständig gegen Mocks/Fakes, kein echter
+  Podman-/Prozessaufruf in der Test-Suite
+- `docs/opencloud-service.md`: Architekturnotiz, feste Konfiguration
+  (Image, Port, Pfade), manueller Bootstrap-Ablauf (`opencloud init`),
+  Zugriffsweg per SSH-Tunnel, Teardown-Verhalten
+- README.md, src/README.md, tests/README.md aktualisiert
+- reale Verifikation auf der PoC-VM (separat, außerhalb der
+  automatisierten Test-Suite): Podman 5.7.0 installiert, OpenCloud-
+  Container `opencloud` läuft rootless und dauerhaft (systemd-Linger),
+  ausschließlich an `127.0.0.1:9200` gebunden, über SSH-Tunnel mit
+  HTTP 200 erreichbar
+- bewusst nicht Bestandteil: `opencloud init` aus der Anwendung heraus,
+  Flask-Endpoint für die Lebenszyklus-Aktionen, Image-Tag-Pinning
+  (aktuell `latest`/rolling, als offene Verbesserung dokumentiert),
+  vollständiger Image-/Daten-Rückbau beim Teardown
