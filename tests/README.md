@@ -17,7 +17,10 @@ Startseite den Projektnamen sowie einen erkennbaren PoC-Hinweis enthält.
 Seit R005 (Application Service Layer) prüft `test_platform_service.py`
 zusätzlich `PlatformInfo` als unveränderliches Datenobjekt und
 `PlatformService.get_platform_info()` als eigenständige Einheit, unabhängig
-von Flask.
+von Flask. Ergänzend prüft `test_app.py::test_index_route_renders_platform_service_output`
+per `monkeypatch`, dass die Route `/` tatsächlich das ersetzt, was der
+Service liefert (Web-Schicht-zu-Service-Integrationstest) — nicht nur
+zufällig identische, hartkodierte Werte.
 
 Die Tests testen bewusst keine weitere Anwendungslogik (Authentifizierung,
 Datenbank, Podman-Integration, Jobs), da diese erst ab späteren
