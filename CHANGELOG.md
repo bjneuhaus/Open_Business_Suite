@@ -25,3 +25,18 @@
 - R001: README.md zur zentralen Einstiegsseite aufgewertet (Icons,
   Inhaltsverzeichnis, lokale Verlinkungen auf alle Governance-Dokumente
   inkl. Kurzerklärung von Roadmap/Workflow/Code Style, Icon-Legende)
+
+### R002 – Python-Projekt
+- minimales, installierbares Python-Paket `sovereign_business_suite`
+  unter `src/sovereign_business_suite/` angelegt (`__init__.py` mit
+  `__version__`)
+- `pyproject.toml` mit Paketmetadaten und Build-Backend (setuptools)
+  ergänzt; Paket per `pip install -e .` installierbar
+- Import-Smoke-Test `tests/test_package_import.py` ergänzt (test-first:
+  zunächst rot, nach Paketanlage grün)
+- `requirements.txt` mit `Flask==3.1.3` als exakt gepinnter Kern-
+  Abhängigkeit für die spätere Verwaltungsoberfläche (R004) befüllt
+- `.gitignore` für `.venv/`, `__pycache__/`, Build-Artefakte ergänzt
+- `src/README.md`, `tests/README.md` und Root-`README.md` aktualisiert
+- keine Black-/Ruff-/pytest-Konfiguration, kein Flask-Grundgerüst, keine
+  Podman-Installation (folgt in R003/R004/R006)
