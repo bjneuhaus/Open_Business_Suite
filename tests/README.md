@@ -30,8 +30,9 @@ Prozessaufruf statt.
 
 Seit R007–R014 (OpenCloud-Vertical-Slice) prüft
 `test_command_runner.py` `CommandRunner` per `monkeypatch` von
-`subprocess.run` (Erfolg, Fehlschlag, Timeout, keine Shell-
-Interpolation), und `test_opencloud_service.py` prüft
+`subprocess.run` (Erfolg, Fehlschlag, Timeout, fehlendes Executable,
+keine Shell-Interpolation, keine Argument-/Secret-Leaks in
+Fehlermeldungen), und `test_opencloud_service.py` prüft
 `OpenCloudService` gegen einen Fake-`CommandRunner`: welche
 `podman`-Kommandos gebaut werden und wie Ergebnisse interpretiert
 werden. Auch hier findet kein echter Podman-/Prozessaufruf statt.

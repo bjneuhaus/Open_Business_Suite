@@ -99,3 +99,62 @@ def test_run_never_uses_shell_interpolation(monkeypatch) -> None:
     runner.run(["podman", "ps", "-a"])
 
     assert captured["args"] == ["podman", "ps", "-a"]
+
+
+def test_run_reports_missing_executable_as_failed_result(monkeypatch) -> None:
+    """A missing executable is reported via CommandResult, not raised."""
+
+    def fake_run(args, capture_output, text, timeout, check):
+        raise FileNotFoundError(2, "No such file or directory", args[0])
+
+    monkeypatch.setattr(
+        "sovereign_business_suite.services.command_runner.subprocess.run",
+        fake_run,
+    )
+    runner = CommandRunner()
+
+    result = runner.run(["does-not-exist", "--flag"])
+
+    assert result.succeeded is False
+    assert result.returncode != 0
+    assert "not found" in result.stderr.lower()
+    assert "does-not-exist" in result.stderr
+
+
+def test_timeout_message_does_not_leak_command_arguments(monkeypatch) -> None:
+    """The timeout error must not echo full argv (may contain secrets)."""
+
+    def fake_run(args, capture_output, text, timeout, check):
+        raise subprocess.TimeoutExpired(cmd=args, timeout=timeout)
+
+    monkeypatch.setattr(
+        "sovereign_business_suite.services.command_runner.subprocess.run",
+        fake_run,
+    )
+    runner = CommandRunner()
+    secret = "super-secret-admin-password"
+
+    result = runner.run(["opencloud", "init", "--admin-password", secret], timeout=1)
+
+    assert secret not in result.stderr
+    assert "opencloud" in result.stderr  # naming just the executable is fine
+
+
+def test_missing_executable_message_does_not_leak_command_arguments(
+    monkeypatch,
+) -> None:
+    """The missing-executable error must not echo full argv either."""
+
+    def fake_run(args, capture_output, text, timeout, check):
+        raise FileNotFoundError(2, "No such file or directory", args[0])
+
+    monkeypatch.setattr(
+        "sovereign_business_suite.services.command_runner.subprocess.run",
+        fake_run,
+    )
+    runner = CommandRunner()
+    secret = "super-secret-admin-password"
+
+    result = runner.run(["opencloud", "init", "--admin-password", secret])
+
+    assert secret not in result.stderr
