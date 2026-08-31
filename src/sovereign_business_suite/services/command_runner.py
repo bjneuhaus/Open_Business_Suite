@@ -24,12 +24,16 @@ class CommandResult:
     """Outcome of running an external command.
 
     Attributes:
-        returncode: The process exit code. A synthetic negative code
-            (see ``CommandRunner.run``) is used when the process never
-            produced a real exit code (e.g. on timeout).
+        returncode: The process exit code. A synthetic code is used
+            when the process never produced a real exit code: ``124``
+            on timeout (matching the common shell convention) and
+            ``127`` when the executable itself could not be found
+            (matching "command not found" shell semantics).
         stdout: Captured standard output.
-        stderr: Captured standard error (or a synthetic message on
-            timeout).
+        stderr: Captured standard error, or a synthetic message on
+            timeout/missing executable. Synthetic messages never
+            include full command arguments (which may contain
+            secrets such as passwords) — only the executable name.
     """
 
     returncode: int
@@ -45,11 +49,12 @@ class CommandResult:
 class CommandRunner:
     """Runs external commands and reports their outcome as CommandResult.
 
-    This class never raises on a non-zero exit code or a timeout —
-    callers must inspect ``CommandResult.succeeded`` instead. This
-    keeps calling code (e.g. ``OpenCloudService``) simple and avoids
-    exception-based control flow for expected failure cases like "the
-    container is not running yet".
+    This class never raises on a non-zero exit code, a timeout, or a
+    missing executable — callers must inspect
+    ``CommandResult.succeeded`` instead. This keeps calling code (e.g.
+    ``OpenCloudService``) simple and avoids exception-based control
+    flow for expected failure cases like "the container is not running
+    yet" or "podman is not installed".
     """
 
     def run(
@@ -64,10 +69,11 @@ class CommandRunner:
             timeout: Maximum time in seconds to wait for the command.
 
         Returns:
-            A ``CommandResult`` describing the outcome. On timeout,
-            ``returncode`` is set to a non-zero value and ``stderr``
-            contains a human-readable message — no exception is
-            raised.
+            A ``CommandResult`` describing the outcome. On timeout or
+            a missing executable, ``returncode`` is set to a
+            conventional non-zero value and ``stderr`` contains a
+            human-readable message that never includes the full
+            argument list — no exception is raised in either case.
         """
         try:
             completed = subprocess.run(
@@ -81,7 +87,13 @@ class CommandRunner:
             return CommandResult(
                 returncode=124,
                 stdout="",
-                stderr=f"Command timed out after {timeout} seconds: {args}",
+                stderr=(f"Command timed out after {timeout} seconds: {args[0]!r}"),
+            )
+        except FileNotFoundError:
+            return CommandResult(
+                returncode=127,
+                stdout="",
+                stderr=f"Executable not found: {args[0]!r}",
             )
 
         return CommandResult(

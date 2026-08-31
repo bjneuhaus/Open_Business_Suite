@@ -153,3 +153,19 @@
   Flask-Endpoint für die Lebenszyklus-Aktionen, Image-Tag-Pinning
   (aktuell `latest`/rolling, als offene Verbesserung dokumentiert),
   vollständiger Image-/Daten-Rückbau beim Teardown
+
+### Fix – R007-Follow-up: CommandRunner-Hardening
+- `CommandRunner.run()` fängt jetzt zusätzlich `FileNotFoundError` ab
+  (fehlendes Executable, z. B. Podman nicht installiert) und liefert
+  einen `CommandResult` mit `returncode=127` statt eine Exception
+  weiterzureichen
+- Timeout- und Missing-Executable-Fehlermeldungen enthalten nur noch
+  den Executable-Namen (`args[0]`), nicht mehr die vollständige
+  Argumentliste — verhindert, dass Secrets (z. B. ein per
+  `--admin-password` übergebenes OpenCloud-Admin-Passwort) in
+  Fehlermeldungen/Logs landen
+- `tests/test_command_runner.py`: drei neue Tests (test-first) decken
+  fehlendes Executable und das Nicht-Leaken von Argumenten in beiden
+  Fehlerpfaden ab
+- kein Verhaltenswechsel bei Erfolg oder regulärem Fehlschlag
+  (Rückwärtskompatibel zu allen bestehenden Aufrufern)
