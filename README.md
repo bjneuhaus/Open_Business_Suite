@@ -51,6 +51,15 @@ Vor Änderungen unbedingt [`AGENTS.md`](AGENTS.md) lesen.
 - 🐳 `src/sovereign_business_suite/services/podman_service.py` –
   `PodmanService.is_available()`, prüft nur `shutil.which("podman")`
   (seit R006, Details in [`docs/podman-availability.md`](docs/podman-availability.md))
+- ⚙️ `src/sovereign_business_suite/services/command_runner.py` –
+  `CommandRunner`, generischer, testbarer `subprocess.run`-Wrapper
+  ohne Shell-Interpolation (seit R007)
+- ☁️ `src/sovereign_business_suite/services/opencloud_service.py` –
+  `OpenCloudService` mit `install()`/`status()`/`start()`/`stop()`
+  für den OpenCloud-Container (seit R010–R014, Details in
+  [`docs/opencloud-service.md`](docs/opencloud-service.md))
+- 📜 `scripts/provision_opencloud.sh` – einmaliges, manuelles
+  Infrastruktur-Skript (Podman-Paket, systemd-Linger, Verzeichnisse)
 - Governance-Dokumente ([`PROJECT.md`](PROJECT.md), [`ROADMAP.md`](ROADMAP.md),
   [`WORKFLOW.md`](WORKFLOW.md), [`CODE_STYLE.md`](CODE_STYLE.md),
   [`DEFINITION_OF_DONE.md`](DEFINITION_OF_DONE.md),
@@ -159,6 +168,8 @@ R003 und folgt in einem späteren Roadmap-Punkt.
 | 🚀 | Anwendung starten |
 | 🧩 | Application Service Layer |
 | 🐳 | Podman-Integration |
+| ⚙️ | Command Execution |
+| ☁️ | OpenCloud-Service |
 | 📌 | Status |
 
 ## 📌 Status

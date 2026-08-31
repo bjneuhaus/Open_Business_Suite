@@ -28,6 +28,14 @@ korrekt zwischen vorhandenem und fehlendem `podman`-Befehl unterscheidet
 und exakt nach dem Namen `"podman"` sucht. Es findet kein echter
 Prozessaufruf statt.
 
+Seit R007–R014 (OpenCloud-Vertical-Slice) prüft
+`test_command_runner.py` `CommandRunner` per `monkeypatch` von
+`subprocess.run` (Erfolg, Fehlschlag, Timeout, keine Shell-
+Interpolation), und `test_opencloud_service.py` prüft
+`OpenCloudService` gegen einen Fake-`CommandRunner`: welche
+`podman`-Kommandos gebaut werden und wie Ergebnisse interpretiert
+werden. Auch hier findet kein echter Podman-/Prozessaufruf statt.
+
 Die Tests testen bewusst keine weitere Anwendungslogik
 (Authentifizierung, Datenbank, echte Podman-/Container-Aufrufe, Jobs),
 da diese erst ab späteren Roadmap-Punkten entsteht. Getestet wird
