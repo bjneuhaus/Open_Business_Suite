@@ -17,9 +17,11 @@ installiertem Paket):
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e .
-pip install -r requirements.txt pytest
+pip install -r requirements.txt -r requirements-dev.txt
 python -m pytest tests/
 ```
 
-Formatierung, Linting und eine feste pytest-Konfiguration (Black, Ruff)
-werden erst in R003 (Code Quality) eingerichtet.
+Seit R003 (Code Quality) sind Black, Ruff und pytest als
+Entwicklungswerkzeuge in `requirements-dev.txt` verankert und eine
+Ruff-Konfiguration liegt in `ruff.toml` im Repository-Root. Siehe auch die
+Sektion „Code-Qualität“ in der Root-`README.md`.

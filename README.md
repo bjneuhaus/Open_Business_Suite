@@ -16,6 +16,7 @@ OpenCloud. Details siehe [`PROJECT.md`](PROJECT.md).
 
 - [🤖 Für AI/Coding Agents](#-für-aicoding-agents)
 - [📁 Repository-Struktur](#-repository-struktur)
+- [🧹 Code-Qualität](#-code-qualität)
 - [📚 Dokumente](#-dokumente)
 - [🔤 Icon-Legende](#-icon-legende)
 - [📌 Status](#-status)
@@ -36,6 +37,9 @@ Vor Änderungen unbedingt [`AGENTS.md`](AGENTS.md) lesen.
   R002: Flask, exakt gepinnt für die spätere Verwaltungsoberfläche)
 - ⚙️ [`pyproject.toml`](pyproject.toml) – Paketmetadaten und Build-Backend
   für `sovereign_business_suite` (seit R002)
+- 🧹 [`ruff.toml`](ruff.toml) – zentrale Ruff-Linter-Konfiguration (seit R003)
+- 📦 [`requirements-dev.txt`](requirements-dev.txt) – Entwicklungswerkzeuge
+  (Black, Ruff, pytest), getrennt von den Laufzeitabhängigkeiten (seit R003)
 - Governance-Dokumente ([`PROJECT.md`](PROJECT.md), [`ROADMAP.md`](ROADMAP.md),
   [`WORKFLOW.md`](WORKFLOW.md), [`CODE_STYLE.md`](CODE_STYLE.md),
   [`DEFINITION_OF_DONE.md`](DEFINITION_OF_DONE.md),
@@ -44,6 +48,29 @@ Vor Änderungen unbedingt [`AGENTS.md`](AGENTS.md) lesen.
 
 Jedes der drei Verzeichnisse enthält eine eigene `README.md` mit Zweck und
 aktuellem Stand.
+
+## 🧹 Code-Qualität
+Seit R003 sind Black (Formatierung), Ruff (Linting) und pytest (Tests) als
+reproduzierbare Entwicklungswerkzeuge eingerichtet. Sie sind bewusst von den
+Laufzeitabhängigkeiten getrennt und liegen in
+[`requirements-dev.txt`](requirements-dev.txt).
+
+Einrichtung und Prüfung (im Projekt-Root):
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e .
+pip install -r requirements.txt -r requirements-dev.txt
+
+black --check src/ tests/
+ruff check src/ tests/
+python -m pytest tests/
+```
+
+Die Ruff-Regeln sind in [`ruff.toml`](ruff.toml) kommentiert dokumentiert.
+Eine automatisierte CI-Ausführung dieser Prüfungen ist nicht Bestandteil von
+R003 und folgt in einem späteren Roadmap-Punkt.
 
 ## 📚 Dokumente
 - 🎯 [`PROJECT.md`](PROJECT.md) – Projekt-Charta: Vision, Prinzipien, PoC-
@@ -84,6 +111,7 @@ aktuellem Stand.
 | ✅ | Definition of Done |
 | 🙋 | Contributing |
 | 📝 | Changelog |
+| 🧹 | Code-Qualität (Black, Ruff, pytest) |
 | 📌 | Status |
 
 ## 📌 Status
