@@ -11,6 +11,7 @@ Vor Änderungen unbedingt `AGENTS.md` lesen.
 - `src/` – Anwendungscode (ab R002 befüllt)
 - `tests/` – automatisierte Tests (ab R002/R003 befüllt)
 - `docs/` – weiterführende technische Dokumentation zu einzelnen Implementierungen
+- `requirements.txt` – Python-Abhängigkeiten (zunächst leer, Inhalt folgt ab R002)
 - Governance-Dokumente (`PROJECT.md`, `ROADMAP.md`, `WORKFLOW.md`, `CODE_STYLE.md`, `DEFINITION_OF_DONE.md`, `CONTRIBUTING.md`, `AGENTS.md`) bleiben im Repository-Root
 
 Jedes der drei Verzeichnisse enthält eine eigene `README.md` mit Zweck und aktuellem Stand.

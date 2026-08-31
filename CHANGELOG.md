@@ -20,3 +20,5 @@
 - R001: Repository-Struktur angelegt (`src/`, `tests/`, `docs/` mit
   jeweils eigener README.md); Governance-Dokumente bleiben im Root;
   Root-README.md um Strukturübersicht ergänzt
+- R001: `requirements.txt` als bewusst leere Grundlage ergänzt; Inhalt
+  folgt in R002 (Python-Projekt)
