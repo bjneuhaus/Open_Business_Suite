@@ -26,7 +26,7 @@ Der Betrieb erfolgt auf **einer einzelnen** per SSH erreichbaren
 **Ubuntu-26.04**-Linux-VM mit zunächst:
 - 4 CPU-Kernen
 - 8 GB RAM
-- 200 GB Festplattenspeicher
+- 150 GB Festplattenspeicher
 
 Diese Werte sind PoC-Ressourcen für Installation, Betrieb und Messung –
 keine zugesicherte Kapazität für 40 gleichzeitige Benutzer. Speicherverbrauch,
