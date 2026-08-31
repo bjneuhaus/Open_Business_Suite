@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <title>OpenCloud konfigurieren</title>
+</head>
+<body>
+    <main>
+        <h1>OpenCloud konfigurieren</h1>
+        <p>
+            Bitte Port sowie Konfigurations- und Datenverzeichnis für die
+            OpenCloud-Installation angeben. Diese Ansicht prüft nur die
+            Eingaben; es wird noch keine Installation gestartet und nichts
+            gespeichert.
+        </p>
+
+        {% if result %}
+            {% if result.is_valid %}
+            <p data-testid="confirmation">
+                Die Eingaben sind gültig und wurden erfolgreich geprüft:
+            </p>
+            <ul>
+                <li>Port: {{ result.host_port }}</li>
+                <li>Konfigurationsverzeichnis: {{ result.config_dir }}</li>
+                <li>Datenverzeichnis: {{ result.data_dir }}</li>
+            </ul>
+            {% else %}
+            <p data-testid="error-summary">
+                Es gibt Probleme mit den Eingaben:
+            </p>
+            <ul>
+                {% for field, message in result.errors.items() %}
+                <li data-error-field="{{ field }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        {% endif %}
+
+        <form method="post" action="/configure">
+            <label for="host_port">Port</label>
+            <input
+                type="text"
+                id="host_port"
+                name="host_port"
+                value="{{ result.host_port if result and result.host_port is not none else '' }}"
+            >
+
+            <label for="config_dir">Konfigurationsverzeichnis</label>
+            <input
+                type="text"
+                id="config_dir"
+                name="config_dir"
+                value="{{ result.config_dir if result else '' }}"
+            >
+
+            <label for="data_dir">Datenverzeichnis</label>
+            <input
+                type="text"
+                id="data_dir"
+                name="data_dir"
+                value="{{ result.data_dir if result else '' }}"
+            >
+
+            <button type="submit">Prüfen</button>
+        </form>
+    </main>
+</body>
+</html>

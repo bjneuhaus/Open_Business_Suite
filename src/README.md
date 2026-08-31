@@ -52,5 +52,14 @@ Katalog wird über `GET /catalog` und
 `templates/catalog.html` angezeigt; Konfigurations- und Image-Details
 werden dabei nicht dupliziert.
 
+Seit R016 enthält das Paket außerdem
+`services/opencloud_configuration_wizard.py`:
+`OpenCloudConfigurationWizardService.validate()` prüft Port,
+Konfigurations- und Datenverzeichnis rein serverseitig, ohne
+Installation auszulösen oder etwas zu speichern. `GET/POST /configure`
+und `templates/configure.html` zeigen Formular, Bestätigung oder
+Fehlermeldungen. Details siehe
+[`docs/configuration-wizard.md`](../docs/configuration-wizard.md).
+
 Ein Flask-Endpoint zur Steuerung dieser Services ist kein Bestandteil
 dieses Slices und folgt in einem späteren Roadmap-Punkt.

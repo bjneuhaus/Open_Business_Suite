@@ -69,6 +69,10 @@ Vor Änderungen unbedingt [`AGENTS.md`](AGENTS.md) lesen.
   [`docs/application-catalog.md`](docs/application-catalog.md))
 - 🖥️ `src/sovereign_business_suite/templates/catalog.html` – serverseitiges
   Template für den Katalog unter `/catalog` (seit R015)
+- 📝 `src/sovereign_business_suite/services/opencloud_configuration_wizard.py` –
+  `OpenCloudConfigurationWizardService.validate()`, prüft Port und
+  Verzeichnispfade ohne Installation/Persistenz (seit R016, Details in
+  [`docs/configuration-wizard.md`](docs/configuration-wizard.md))
 - 📜 `scripts/provision_opencloud.sh` – einmaliges, manuelles
   Infrastruktur-Skript (Podman-Paket, systemd-Linger, Verzeichnisse,
   Pull des gepinnten Images)
@@ -115,10 +119,12 @@ HTML-Seite mit der Überschrift „Sovereign Business Suite“ und einem
 Hinweistext, der die Seite ausdrücklich als Proof of Concept (R004 –
 Flask-Grundgerüst) kennzeichnet. Der direkte Aufruf von `/catalog` zeigt
 zusätzlich die Überschrift „Anwendungskatalog“ und einen Eintrag für
-„OpenCloud“ mit Beschreibung. Beide Ansichten sind bewusst schlicht und
-ohne Styling. Authentifizierung, Datenbank, Lebenszyklus-Aktionen,
-Installation, Jobs und ein `/health`-Endpoint sind weiterhin nicht Teil
-von R015.
+„OpenCloud“ mit Beschreibung. Der Aufruf von `/configure` zeigt ein
+Formular für Port, Konfigurations- und Datenverzeichnis; nach dem Absenden
+entweder eine Bestätigung der geprüften Werte oder verständliche
+Fehlermeldungen je Feld. Alle Ansichten sind bewusst schlicht und ohne
+Styling. Authentifizierung, Datenbank, Lebenszyklus-Aktionen, Installation,
+Jobs und ein `/health`-Endpoint sind weiterhin nicht Teil von R015/R016.
 
 ## 🧹 Code-Qualität
 Seit R003 sind Black (Formatierung), Ruff (Linting) und pytest (Tests) als
@@ -192,6 +198,7 @@ R003 und folgt in einem späteren Roadmap-Punkt.
 | ☁️ | OpenCloud-Service |
 | 🔒 | Gepinnter Image-Digest |
 | 📋 | Application Catalog |
+| 📝 | Configuration Wizard |
 | 📌 | Status |
 
 ## 📌 Status

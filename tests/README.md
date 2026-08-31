@@ -46,6 +46,18 @@ Flask. `test_app.py::test_catalog_route_renders_application_catalog_service_outp
 prüft mit einem unverwechselbaren, per `monkeypatch` eingesetzten Eintrag
 explizit die Integration Route → `ApplicationCatalogService` → Template.
 
+Seit R016 prüft `test_opencloud_configuration_wizard.py` jede
+Validierungsregel (gültiger Port, ungültiger/außerhalb des Bereichs
+liegender/privilegierter Port, relative/leere/identische Verzeichnisse,
+mehrere gleichzeitige Fehler) und dass das Ergebnis keine Secret-Felder
+enthält — unabhängig von Flask. Ergänzend prüfen
+`test_app.py::test_configure_get_returns_200_with_form`,
+`test_configure_post_valid_submission_shows_confirmation` und
+`test_configure_post_invalid_submission_shows_errors` das
+Formularverhalten; `test_configure_post_does_not_trigger_installation`
+stellt per `monkeypatch` explizit sicher, dass `POST /configure`
+niemals `OpenCloudService.install()` aufruft.
+
 Die Tests testen bewusst keine weitere Anwendungslogik
 (Authentifizierung, Datenbank, echte Podman-/Container-Aufrufe, Jobs),
 da diese erst ab späteren Roadmap-Punkten entsteht. Getestet wird
