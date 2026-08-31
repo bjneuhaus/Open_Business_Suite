@@ -72,3 +72,22 @@
   `tests/README.md` aktualisiert
 - keine Authentifizierung, keine Datenbank, keine Podman-Integration,
   keine Jobs, kein `/health`-Endpoint (folgt in späteren Roadmap-Punkten)
+
+### R005 – Application Service Layer
+- `src/sovereign_business_suite/services/platform_service.py`:
+  `PlatformInfo` (unveränderliches Datenobjekt) und `PlatformService`
+  mit `get_platform_info() -> PlatformInfo` als erste Grenze zwischen
+  Flask-Webschicht und Plattformlogik
+- `app.py`: Route `index()` bezieht Inhalte jetzt über
+  `PlatformService.get_platform_info()` statt hartkodierter Werte;
+  `templates/index.html` rendert `info.project_name` /
+  `info.status_message`
+- `tests/test_platform_service.py` (test-first): prüft `PlatformInfo`
+  als Value-Objekt und `get_platform_info()` unabhängig von Flask
+- `docs/application-service-layer.md`: Architekturnotiz zur Service-
+  Grenze und den Regeln für künftige Services in diesem Paket
+- `src/README.md`, `tests/README.md`, Root-`README.md` (neuer
+  Icon-Eintrag) und `CHANGELOG.md` aktualisiert
+- Service enthält bewusst keine Podman-, Prozess- oder
+  Dateisystemaufrufe, keine Jobs, keine OpenCloud-Logik und keine
+  allgemeine Plugin-Architektur (folgt in R006+)

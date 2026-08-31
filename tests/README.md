@@ -13,6 +13,12 @@ Seit R004 (Flask-Grundgerüst) prüft `test_app.py` zusätzlich mit dem
 Flask-Testclient, dass `create_app()` eine funktionsfähige Anwendung
 liefert, `GET /` erfolgreich antwortet (Statuscode 200) und die
 Startseite den Projektnamen sowie einen erkennbaren PoC-Hinweis enthält.
+
+Seit R005 (Application Service Layer) prüft `test_platform_service.py`
+zusätzlich `PlatformInfo` als unveränderliches Datenobjekt und
+`PlatformService.get_platform_info()` als eigenständige Einheit, unabhängig
+von Flask.
+
 Die Tests testen bewusst keine weitere Anwendungslogik (Authentifizierung,
 Datenbank, Podman-Integration, Jobs), da diese erst ab späteren
 Roadmap-Punkten entsteht.
