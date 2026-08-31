@@ -19,7 +19,7 @@ diese drei Werte:
 | --- | --- | --- |
 | `id` | stabile maschinenlesbare Identität | `opencloud` |
 | `name` | Name für die Administration | `OpenCloud` |
-| `description` | kurze Beschreibung für die Administration | selbst gehostete Dateiablage und Zusammenarbeit |
+| `description` | kurze Beschreibung für die Administration | `Open-Source-Plattform fuer Dateispeicherung und Zusammenarbeit; erste Referenzanwendung der Sovereign Business Suite.` |
 
 Die Einträge sind unveränderliche Value Objects. Der Service besitzt keine
 Datenbank, keine Dateipersistenz und keine Discovery- oder Plugin-Logik. Der
