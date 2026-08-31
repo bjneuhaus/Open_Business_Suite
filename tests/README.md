@@ -28,9 +28,11 @@ korrekt zwischen vorhandenem und fehlendem `podman`-Befehl unterscheidet
 und exakt nach dem Namen `"podman"` sucht. Es findet kein echter
 Prozessaufruf statt.
 
-Die Tests testen bewusst keine weitere Anwendungslogik (Authentifizierung,
-Datenbank, Podman-Integration, Jobs), da diese erst ab späteren
-Roadmap-Punkten entsteht.
+Die Tests testen bewusst keine weitere Anwendungslogik
+(Authentifizierung, Datenbank, echte Podman-/Container-Aufrufe, Jobs),
+da diese erst ab späteren Roadmap-Punkten entsteht. Getestet wird
+lediglich, ob der `podman`-Befehl vorhanden ist (siehe R006 oben) — kein
+tatsächlicher Aufruf von Podman selbst.
 
 Ausführung (im Projekt-Root, mit aktivierter virtueller Umgebung und
 installiertem Paket):
