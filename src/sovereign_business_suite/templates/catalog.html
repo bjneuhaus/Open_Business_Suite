@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <title>Anwendungskatalog</title>
+</head>
+<body>
+    <main>
+        <h1>Anwendungskatalog</h1>
+        <p>Verfügbare Anwendungen für die Plattform-Administration.</p>
+
+        {% if applications %}
+        <ul>
+            {% for application in applications %}
+            <li data-application-id="{{ application.id }}">
+                <h2>{{ application.name }}</h2>
+                <p>{{ application.description }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>Derzeit sind keine Anwendungen verfügbar.</p>
+        {% endif %}
+    </main>
+</body>
+</html>

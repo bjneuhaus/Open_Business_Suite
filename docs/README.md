@@ -15,6 +15,8 @@ Implementierungsdetails bezieht, zum Beispiel:
   (z. B. OpenCloud-Integration)
 - Betriebs- und Installationsanleitungen für die Ziel-VM
 - API- oder Konfigurationsreferenzen
+- [`application-catalog.md`](application-catalog.md) – technischer Vertrag
+  des R015-Anwendungskatalogs
 
-Zum Zeitpunkt von R001 (Repository-Struktur) ist dieses Verzeichnis noch
-leer und wird ab den jeweils betroffenen Roadmap-Punkten befüllt.
+Die konkreten technischen Notizen werden ab den jeweils betroffenen
+Roadmap-Punkten ergänzt.

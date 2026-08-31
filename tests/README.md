@@ -40,6 +40,12 @@ von `config/opencloud-image.env` und das Zusammensetzen von
 und dass `default_opencloud_config()` den gepinnten Digest verwendet.
 Auch hier findet kein echter Podman-/Prozessaufruf statt.
 
+Seit R015 prüft `test_application_catalog_service.py` den unveränderlichen,
+minimalen Katalogeintrag und den OpenCloud-Standardkatalog unabhängig von
+Flask. `test_app.py::test_catalog_route_renders_application_catalog_service_output`
+prüft mit einem unverwechselbaren, per `monkeypatch` eingesetzten Eintrag
+explizit die Integration Route → `ApplicationCatalogService` → Template.
+
 Die Tests testen bewusst keine weitere Anwendungslogik
 (Authentifizierung, Datenbank, echte Podman-/Container-Aufrufe, Jobs),
 da diese erst ab späteren Roadmap-Punkten entsteht. Getestet wird

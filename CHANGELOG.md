@@ -199,3 +199,21 @@
   Entwicklung verwenden dasselbe, bereits verifizierte Image, statt
   bei jedem Neuaufbau potenziell eine andere Version zu ziehen; Image
   bleibt beim Teardown weiterhin erhalten (kein Verhaltenswechsel)
+
+### R015 – Application Catalog
+- `services/application_catalog_service.py`: read-only
+  `ApplicationCatalogService` mit unveränderlichem
+  `ApplicationCatalogEntry`-Datenmodell (`id`, `name`, `description`) und
+  der ersten unterstützten Anwendung OpenCloud (`id="opencloud"`)
+- `app.py` und `templates/catalog.html`: serverseitig gerenderte
+  Administratoransicht unter `GET /catalog`; die Route bezieht ihre Daten
+  ausschließlich aus dem Application Service Layer
+- `tests/test_application_catalog_service.py` und
+  `tests/test_app.py`: fokussierte Service-Tests sowie ein expliziter
+  Route-zu-Service-Integrationstest mit unverwechselbaren per monkeypatch
+  eingesetzten Daten
+- `docs/application-catalog.md`, Root-README.md, `src/README.md`,
+  `tests/README.md` und `docs/README.md` aktualisiert
+- bewusst nicht Bestandteil: Persistenz, Plugin-/Discovery-Architektur,
+  Konfiguration, Installation, Start/Stop, Status, Authentifizierung,
+  Hintergrundjobs und Änderungen an VM oder Container
