@@ -32,10 +32,13 @@ Seit R007–R014 (OpenCloud-Vertical-Slice) prüft
 `test_command_runner.py` `CommandRunner` per `monkeypatch` von
 `subprocess.run` (Erfolg, Fehlschlag, Timeout, fehlendes Executable,
 keine Shell-Interpolation, keine Argument-/Secret-Leaks in
-Fehlermeldungen), und `test_opencloud_service.py` prüft
+Fehlermeldungen), `test_opencloud_image_config.py` prüft das Parsen
+von `config/opencloud-image.env` und das Zusammensetzen von
+`OPENCLOUD_IMAGE_REF`, und `test_opencloud_service.py` prüft
 `OpenCloudService` gegen einen Fake-`CommandRunner`: welche
-`podman`-Kommandos gebaut werden und wie Ergebnisse interpretiert
-werden. Auch hier findet kein echter Podman-/Prozessaufruf statt.
+`podman`-Kommandos gebaut werden, wie Ergebnisse interpretiert werden
+und dass `default_opencloud_config()` den gepinnten Digest verwendet.
+Auch hier findet kein echter Podman-/Prozessaufruf statt.
 
 Die Tests testen bewusst keine weitere Anwendungslogik
 (Authentifizierung, Datenbank, echte Podman-/Container-Aufrufe, Jobs),

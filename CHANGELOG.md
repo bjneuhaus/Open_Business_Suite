@@ -169,3 +169,33 @@
   Fehlerpfaden ab
 - kein Verhaltenswechsel bei Erfolg oder regulärem Fehlschlag
   (Rückwärtskompatibel zu allen bestehenden Aufrufern)
+
+### Fix – OpenCloud-Image-Digest-Pinning
+- `config/opencloud-image.env`: neue, einzige Quelle der Wahrheit für
+  den OpenCloud-Image-Verweis (`OPENCLOUD_IMAGE_REPOSITORY`,
+  `OPENCLOUD_IMAGE_DIGEST`), verifiziert per `podman images --digests`
+  auf der PoC-VM am 2026-08-31
+  (`sha256:6db1cfb06d430a663f16e9f33dcd4596d82a4875be0b4df233c26ce5f667ea74`)
+- `src/sovereign_business_suite/opencloud_image_config.py`: liest
+  diese Datei und stellt `OPENCLOUD_IMAGE_REPOSITORY`,
+  `OPENCLOUD_IMAGE_DIGEST`, `OPENCLOUD_IMAGE_REF` als Python-Konstanten
+  bereit
+- `services/opencloud_service.py`: neue Factory-Funktion
+  `default_opencloud_config()` befüllt `OpenCloudConfig.image`
+  automatisch mit dem gepinnten Digest statt einem floatenden
+  `latest`/rolling-Tag; bestehender `OpenCloudConfig`-Konstruktor
+  bleibt unverändert und rückwärtskompatibel
+- `scripts/provision_opencloud.sh`: liest denselben Digest aus
+  `config/opencloud-image.env`, pullt jetzt genau dieses Image (statt
+  gar keins zu pullen)
+- `tests/test_opencloud_image_config.py` (neu, test-first) und drei
+  neue Tests in `tests/test_opencloud_service.py`: verifizieren Parsen
+  der Konfigurationsdatei, Format des Digests und dass
+  `default_opencloud_config()`/`install()` den gepinnten Digest
+  verwenden
+- `docs/opencloud-service.md`, README.md, src/README.md,
+  tests/README.md aktualisiert
+- Zweck: wiederkehrende Auf-/Abbauzyklen der Plattform während der
+  Entwicklung verwenden dasselbe, bereits verifizierte Image, statt
+  bei jedem Neuaufbau potenziell eine andere Version zu ziehen; Image
+  bleibt beim Teardown weiterhin erhalten (kein Verhaltenswechsel)

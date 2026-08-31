@@ -36,8 +36,12 @@ Seit R007–R014 (OpenCloud-Vertical-Slice) enthält das Paket zusätzlich
 `services/command_runner.py` (`CommandRunner`, generischer
 `subprocess`-Wrapper) und `services/opencloud_service.py`
 (`OpenCloudService` mit `install()`/`status()`/`start()`/`stop()`).
-Details, feste Konfiguration und der manuelle Bootstrap-Ablauf stehen
-in [`docs/opencloud-service.md`](../docs/opencloud-service.md).
+Der OpenCloud-Image-Verweis ist per Digest gepinnt: die einzige Quelle
+der Wahrheit ist `config/opencloud-image.env` im Repository-Root,
+gelesen von `opencloud_image_config.py`; `default_opencloud_config()`
+nutzt diesen Digest automatisch. Details, feste Konfiguration und der
+manuelle Bootstrap-Ablauf stehen in
+[`docs/opencloud-service.md`](../docs/opencloud-service.md).
 
 Ein Flask-Endpoint zur Steuerung dieser Services ist kein Bestandteil
 dieses Slices und folgt in einem späteren Roadmap-Punkt.
