@@ -16,6 +16,7 @@ OpenCloud. Details siehe [`PROJECT.md`](PROJECT.md).
 
 - [🤖 Für AI/Coding Agents](#-für-aicoding-agents)
 - [📁 Repository-Struktur](#-repository-struktur)
+- [🚀 Anwendung starten](#-anwendung-starten)
 - [🧹 Code-Qualität](#-code-qualität)
 - [📚 Dokumente](#-dokumente)
 - [🔤 Icon-Legende](#-icon-legende)
@@ -40,6 +41,9 @@ Vor Änderungen unbedingt [`AGENTS.md`](AGENTS.md) lesen.
 - 🧹 [`ruff.toml`](ruff.toml) – zentrale Ruff-Linter-Konfiguration (seit R003)
 - 📦 [`requirements-dev.txt`](requirements-dev.txt) – Entwicklungswerkzeuge
   (Black, Ruff, pytest), getrennt von den Laufzeitabhängigkeiten (seit R003)
+- 🚀 `src/sovereign_business_suite/app.py` – minimale Flask-App-Factory
+  mit serverseitig gerenderter Startseite (Template unter
+  `src/sovereign_business_suite/templates/`, seit R004)
 - Governance-Dokumente ([`PROJECT.md`](PROJECT.md), [`ROADMAP.md`](ROADMAP.md),
   [`WORKFLOW.md`](WORKFLOW.md), [`CODE_STYLE.md`](CODE_STYLE.md),
   [`DEFINITION_OF_DONE.md`](DEFINITION_OF_DONE.md),
@@ -48,6 +52,39 @@ Vor Änderungen unbedingt [`AGENTS.md`](AGENTS.md) lesen.
 
 Jedes der drei Verzeichnisse enthält eine eigene `README.md` mit Zweck und
 aktuellem Stand.
+
+## 🚀 Anwendung starten
+Seit R004 existiert eine minimale Flask-Anwendung mit serverseitig
+gerenderter Startseite (`src/sovereign_business_suite/app.py`, Template
+unter `src/sovereign_business_suite/templates/index.html`).
+
+Lokaler Start (nach Einrichtung wie in [🧹 Code-Qualität](#-code-qualität)
+beschrieben):
+
+```bash
+python -m flask --app sovereign_business_suite.app run \
+  --host 127.0.0.1 --port 5000
+```
+
+Die Anwendung ist damit standardmäßig **nur lokal auf `127.0.0.1`**
+erreichbar (siehe `PROJECT.md`, Zugriffsmodell für die
+Verwaltungsoberfläche). Auf der Ziel-VM erfolgt der Zugriff über einen
+SSH-Tunnel:
+
+```bash
+ssh -L 5000:127.0.0.1:5000 <benutzer>@<vm-adresse>
+```
+
+Danach im Browser auf dem eigenen Rechner `http://127.0.0.1:5000/`
+öffnen.
+
+**Erwartetes visuelles Ergebnis:** eine einfache HTML-Seite mit der
+Überschrift „Sovereign Business Suite“ und einem Hinweistext, der die
+Seite ausdrücklich als Proof of Concept (R004 – Flask-Grundgerüst)
+kennzeichnet. Es gibt noch keine Navigation, kein Styling und keine
+weitere Funktionalität — Authentifizierung, Datenbank, Podman-
+Integration, Jobs und ein `/health`-Endpoint sind bewusst nicht
+Bestandteil von R004.
 
 ## 🧹 Code-Qualität
 Seit R003 sind Black (Formatierung), Ruff (Linting) und pytest (Tests) als
@@ -112,6 +149,7 @@ R003 und folgt in einem späteren Roadmap-Punkt.
 | 🙋 | Contributing |
 | 📝 | Changelog |
 | 🧹 | Code-Qualität (Black, Ruff, pytest) |
+| 🚀 | Anwendung starten |
 | 📌 | Status |
 
 ## 📌 Status

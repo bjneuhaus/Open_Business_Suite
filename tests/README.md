@@ -7,8 +7,15 @@ Dieses Verzeichnis enthält die pytest-basierten Tests für das Paket
 
 Seit R002 (Python-Projekt) existiert ein Import-Smoke-Test
 (`test_package_import.py`), der nur prüft, dass das Paket installierbar
-und importierbar ist und eine `__version__` bereitstellt. Er testet
-bewusst keine Anwendungslogik, da diese erst ab R004+ entsteht.
+und importierbar ist und eine `__version__` bereitstellt.
+
+Seit R004 (Flask-Grundgerüst) prüft `test_app.py` zusätzlich mit dem
+Flask-Testclient, dass `create_app()` eine funktionsfähige Anwendung
+liefert, `GET /` erfolgreich antwortet (Statuscode 200) und die
+Startseite den Projektnamen sowie einen erkennbaren PoC-Hinweis enthält.
+Die Tests testen bewusst keine weitere Anwendungslogik (Authentifizierung,
+Datenbank, Podman-Integration, Jobs), da diese erst ab späteren
+Roadmap-Punkten entsteht.
 
 Ausführung (im Projekt-Root, mit aktivierter virtueller Umgebung und
 installiertem Paket):
