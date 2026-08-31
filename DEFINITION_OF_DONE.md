@@ -4,10 +4,10 @@ Ein Roadmap-Punkt ist erst abgeschlossen, wenn:
 
 - vereinbarte Funktion implementiert
 - Scope eingehalten
-- Black erfolgreich
-- Ruff erfolgreich
+- Black erfolgreich (`black --check src/ tests/`)
+- Ruff erfolgreich (`ruff check src/ tests/`, Konfiguration in `ruff.toml`)
 - relevante Tests vorhanden
-- bestehende Tests grün
+- bestehende Tests grün (`python -m pytest tests/`)
 - sinnvolle Type Hints vorhanden
 - erforderliche Docstrings vorhanden
 - Benutzer- und technische Dokumentation aktualisiert

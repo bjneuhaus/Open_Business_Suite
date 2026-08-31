@@ -1,0 +1,10 @@
+# Entwicklungs-/Qualitätswerkzeuge fuer die Sovereign Business Suite.
+#
+# Getrennt von requirements.txt (Laufzeitabhaengigkeiten der Anwendung).
+# Installation zusaetzlich zu requirements.txt:
+#   pip install -r requirements.txt -r requirements-dev.txt
+#
+# Python 3.11+ (siehe PROJECT.md).
+black==25.1.0
+ruff==0.16.5
+pytest==9.1.1

@@ -1,0 +1,40 @@
+# Ruff-Konfiguration für die Sovereign Business Suite.
+#
+# Ruff übernimmt gemäß CODE_STYLE.md das Linting; Black bleibt separat für
+# die Formatierung zuständig (Ruff formatiert hier bewusst nicht mit).
+# Diese Datei ist die einzige zentrale Konfiguration für Ruff im Projekt.
+
+# Zielversion der Ziel-VM und der lokalen Entwicklungsumgebung (siehe
+# PROJECT.md: Ubuntu 26.04 mit Python 3.11).
+target-version = "py311"
+
+# Gleiche Zeilenlänge wie Black (Standard 88 Zeichen), damit beide
+# Werkzeuge sich nicht widersprechen.
+line-length = 88
+
+# Nur src/ und tests/ prüfen; Governance-Markdown-Dokumente im Root sind
+# kein Python-Code und werden nicht gelintet.
+include = ["src/**/*.py", "tests/**/*.py"]
+
+[lint]
+# Bewusst zurückhaltende, gut verständliche Regel-Auswahl für den Start.
+# Weitere Regeln können bei Bedarf in einem eigenen Roadmap-Punkt ergänzt
+# werden (CODE_STYLE.md: keine spekulative Vorab-Konfiguration).
+select = [
+    "E",   # pycodestyle: Fehler (z. B. Syntax-nahe Stilverstöße)
+    "W",   # pycodestyle: Warnungen (z. B. Whitespace-Probleme)
+    "F",   # Pyflakes: unbenutzte Imports/Variablen, undefinierte Namen
+    "I",   # isort: konsistente, sortierte Import-Reihenfolge
+    "UP",  # pyupgrade: veraltete Python-Syntax modernisieren
+    "B",   # flake8-bugbear: häufige Bug-Muster und Fallstricke
+]
+
+# Keine Regeln bewusst ignoriert; falls künftig Ausnahmen nötig werden,
+# hier mit Begründung als Kommentar ergänzen.
+ignore = []
+
+[lint.isort]
+# Das eigene Paket als "first-party" behandeln, damit Imports sauber
+# zwischen Standardbibliothek, Drittanbieter-Paketen und eigenem Code
+# gruppiert werden.
+known-first-party = ["sovereign_business_suite"]

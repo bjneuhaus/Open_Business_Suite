@@ -40,3 +40,18 @@
 - `src/README.md`, `tests/README.md` und Root-`README.md` aktualisiert
 - keine Black-/Ruff-/pytest-Konfiguration, kein Flask-Grundgerüst, keine
   Podman-Installation (folgt in R003/R004/R006)
+
+### R003 – Code Quality
+- `ruff.toml` als zentrale, kommentierte Ruff-Linter-Konfiguration ergänzt
+  (Zielversion py311, Regel-Auswahl E/W/F/I/UP/B, isort-Einstellung für
+  `sovereign_business_suite` als first-party)
+- `requirements-dev.txt` mit `black==25.1.0`, `ruff==0.16.5`,
+  `pytest==9.1.1` als von den Laufzeitabhängigkeiten getrennte
+  Entwicklungswerkzeuge ergänzt; keine flake8-Abhängigkeit aufgenommen
+- vorhandener Code (`src/`, `tests/`) mit `black --check`, `ruff check`
+  und `pytest` geprüft: alle drei Prüfungen ohne Findings/Fehler, keine
+  Codeänderungen notwendig
+- Root-`README.md` um Abschnitt „Code-Qualität“ und Inhaltsverzeichnis-
+  Eintrag ergänzt; `tests/README.md` aktualisiert
+- `DEFINITION_OF_DONE.md` um konkrete Prüfbefehle ergänzt
+- Flask-Anwendung, Podman-Integration und CI bleiben außerhalb des Scopes
