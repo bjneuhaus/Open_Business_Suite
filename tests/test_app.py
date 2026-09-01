@@ -13,6 +13,10 @@ the original R004/R005 tests only checked for values that happened to
 be identical to the service's hardcoded output.
 """
 
+from pathlib import Path
+
+import pytest
+
 from sovereign_business_suite.app import create_app
 from sovereign_business_suite.services.application_catalog_service import (
     ApplicationCatalogEntry,
@@ -128,23 +132,29 @@ def test_configure_get_returns_200_with_form() -> None:
     assert "data_dir" in html
 
 
-def test_configure_post_valid_submission_shows_confirmation() -> None:
+def test_configure_post_valid_submission_shows_confirmation(
+    monkeypatch, tmp_path
+) -> None:
     """POST /configure with valid values must show a confirmation."""
+    home = tmp_path / "home"
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: home))
+    config_dir = home / "opencloud" / "opencloud-config"
+    data_dir = home / "opencloud" / "opencloud-data"
     app = create_app()
 
     response = app.test_client().post(
         "/configure",
         data={
             "host_port": "9200",
-            "config_dir": "/home/training/opencloud/opencloud-config",
-            "data_dir": "/home/training/opencloud/opencloud-data",
+            "config_dir": str(config_dir),
+            "data_dir": str(data_dir),
         },
     )
     html = response.get_data(as_text=True)
 
     assert response.status_code == 200
     assert "9200" in html
-    assert "/home/training/opencloud/opencloud-config" in html
+    assert str(config_dir) in html
     assert "erfolgreich" in html.lower() or "gültig" in html.lower()
     assert 'action="/install"' in html
     assert "Installation starten" in html
@@ -238,8 +248,14 @@ def test_catalog_page_links_to_configuration_wizard() -> None:
     assert 'href="/configure"' in html
 
 
-def test_install_route_starts_opencloud_once_for_valid_submission(monkeypatch) -> None:
+def test_install_route_starts_opencloud_once_for_valid_submission(
+    monkeypatch, tmp_path
+) -> None:
     """POST /install starts OpenCloud once and reports the immediate state."""
+    home = tmp_path / "home"
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: home))
+    config_dir = home / "opencloud" / "config"
+    data_dir = home / "opencloud" / "data"
     install_calls = []
     monkeypatch.setattr(
         OpenCloudService,
@@ -253,8 +269,8 @@ def test_install_route_starts_opencloud_once_for_valid_submission(monkeypatch) -
         "/install",
         data={
             "host_port": "9321",
-            "config_dir": "/srv/opencloud/config",
-            "data_dir": "/srv/opencloud/data",
+            "config_dir": str(config_dir),
+            "data_dir": str(data_dir),
         },
     )
     html = response.get_data(as_text=True)
@@ -291,16 +307,107 @@ def test_install_post_invalid_submission_shows_errors_without_installing(
     assert install_calls == []
 
 
-def test_install_route_uses_validated_values_for_service_configuration(
-    monkeypatch,
+def test_install_post_rejects_paths_outside_allowlist_without_installing(
+    monkeypatch, tmp_path
+) -> None:
+    """R017 must reject syntactically valid paths outside ~/opencloud."""
+    home = tmp_path / "home"
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: home))
+    install_calls = []
+    monkeypatch.setattr(
+        OpenCloudService,
+        "install",
+        lambda self: install_calls.append(True),
+    )
+
+    app = create_app()
+    response = app.test_client().post(
+        "/install",
+        data={
+            "host_port": "9200",
+            "config_dir": str(tmp_path / "outside-config"),
+            "data_dir": str(tmp_path / "outside-data"),
+        },
+    )
+    html = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert "zulässigen OpenCloud-Speicherbereich" in html
+    assert install_calls == []
+
+
+def test_install_post_rejects_dot_dot_escape_without_installing(monkeypatch, tmp_path):
+    """R017 must reject a path escaping ~/opencloud through '..'."""
+    home = tmp_path / "home"
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: home))
+    install_calls = []
+    monkeypatch.setattr(
+        OpenCloudService,
+        "install",
+        lambda self: install_calls.append(True),
+    )
+
+    app = create_app()
+    response = app.test_client().post(
+        "/install",
+        data={
+            "host_port": "9200",
+            "config_dir": str(home / "opencloud" / ".." / "escaped-config"),
+            "data_dir": str(home / "opencloud" / "data"),
+        },
+    )
+
+    assert response.status_code == 200
+    assert "zulässigen OpenCloud-Speicherbereich" in response.get_data(as_text=True)
+    assert install_calls == []
+
+
+def test_install_post_rejects_symlink_resolving_outside_without_installing(
+    monkeypatch, tmp_path
+):
+    """R017 must reject an existing symlink whose target is outside the root."""
+    home = tmp_path / "home"
+    root = home / "opencloud"
+    root.mkdir(parents=True)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (root / "config-link").symlink_to(outside, target_is_directory=True)
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: home))
+    install_calls = []
+    monkeypatch.setattr(
+        OpenCloudService,
+        "install",
+        lambda self: install_calls.append(True),
+    )
+
+    app = create_app()
+    response = app.test_client().post(
+        "/install",
+        data={
+            "host_port": "9200",
+            "config_dir": str(root / "config-link"),
+            "data_dir": str(root / "data"),
+        },
+    )
+
+    assert response.status_code == 200
+    assert "zulässigen OpenCloud-Speicherbereich" in response.get_data(as_text=True)
+    assert install_calls == []
+
+
+def test_install_route_uses_normalized_values_for_service_configuration(
+    monkeypatch, tmp_path
 ) -> None:
     """POST /install passes normalized wizard values to the service layer."""
+    home = tmp_path / "home"
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: home))
+    root = home / "opencloud"
     expected_config = OpenCloudConfig(
         image="stand-in-image",
         container_name="stand-in-opencloud",
         host_port=9321,
-        config_dir="/srv/opencloud/config",
-        data_dir="/srv/opencloud/data",
+        config_dir=str(root / "config"),
+        data_dir=str(root / "data"),
     )
     factory_calls = []
     service_configs = []
@@ -328,18 +435,21 @@ def test_install_route_uses_validated_values_for_service_configuration(
         "/install",
         data={
             "host_port": " 9321 ",
-            "config_dir": " /srv/opencloud/config ",
-            "data_dir": " /srv/opencloud/data ",
+            "config_dir": f" {root / 'nested' / '..' / 'config'} ",
+            "data_dir": f" {root / 'data'} ",
         },
     )
 
     assert response.status_code == 200
-    assert factory_calls == [("/srv/opencloud/config", "/srv/opencloud/data", 9321)]
+    assert factory_calls == [(str(root / "config"), str(root / "data"), 9321)]
     assert service_configs == [expected_config]
 
 
-def test_install_post_reports_failed_install_result(monkeypatch) -> None:
+def test_install_post_reports_failed_install_result(monkeypatch, tmp_path) -> None:
     """POST /install must show a clear failure message on a bad result."""
+    home = tmp_path / "home"
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: home))
+    root = home / "opencloud"
     stand_in_failure = CommandResult(
         returncode=1, stdout="", stderr="distinctive stand-in failure reason"
     )
@@ -354,8 +464,8 @@ def test_install_post_reports_failed_install_result(monkeypatch) -> None:
         "/install",
         data={
             "host_port": "9200",
-            "config_dir": "/home/training/opencloud/opencloud-config",
-            "data_dir": "/home/training/opencloud/opencloud-data",
+            "config_dir": str(root / "config"),
+            "data_dir": str(root / "data"),
         },
     )
     html = response.get_data(as_text=True)
@@ -366,30 +476,29 @@ def test_install_post_reports_failed_install_result(monkeypatch) -> None:
 
 
 def test_install_post_handles_install_exception_without_leaking_details(
-    monkeypatch,
+    monkeypatch, tmp_path
 ) -> None:
-    """Unexpected service errors must become a generic safe response."""
+    """Unexpected service errors must propagate instead of being masked."""
     secret_detail = "secret-argument-value"
+    home = tmp_path / "home"
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: home))
 
     def fail_install(self):
         raise RuntimeError(secret_detail)
 
     monkeypatch.setattr(OpenCloudService, "install", fail_install)
     app = create_app()
+    app.config["TESTING"] = True
 
-    response = app.test_client().post(
-        "/install",
-        data={
-            "host_port": "9200",
-            "config_dir": "/home/training/opencloud/opencloud-config",
-            "data_dir": "/home/training/opencloud/opencloud-data",
-        },
-    )
-    html = response.get_data(as_text=True)
-
-    assert response.status_code == 200
-    assert "Installationsstart konnte nicht ausgelöst werden" in html
-    assert secret_detail not in html
+    with pytest.raises(RuntimeError, match=secret_detail):
+        app.test_client().post(
+            "/install",
+            data={
+                "host_port": "9200",
+                "config_dir": str(home / "opencloud" / "config"),
+                "data_dir": str(home / "opencloud" / "data"),
+            },
+        )
 
 
 def test_install_get_returns_405() -> None:

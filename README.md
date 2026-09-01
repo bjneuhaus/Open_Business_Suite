@@ -73,6 +73,11 @@ Vor Änderungen unbedingt [`AGENTS.md`](AGENTS.md) lesen.
   `OpenCloudConfigurationWizardService.validate()`, prüft Port und
   Verzeichnispfade ohne Installation/Persistenz (seit R016, Details in
   [`docs/configuration-wizard.md`](docs/configuration-wizard.md))
+- 🔐 `src/sovereign_business_suite/services/opencloud_installation_policy.py` –
+  `normalize_installation_path()`, R017-Sicherheitsprüfung: verlangt
+  einen echten, aufgelösten Unterordner von `~/opencloud` und blockt
+  `..`-Traversal sowie Symlink-Escapes (Details in
+  [`docs/installation-start.md`](docs/installation-start.md))
 - ▶️ `src/sovereign_business_suite/app.py` und
   `src/sovereign_business_suite/templates/configure.html` –
   `GET/POST /configure` zur Validierung sowie die Startmöglichkeit per
@@ -216,6 +221,7 @@ R003 und folgt in einem späteren Roadmap-Punkt.
 | 🔒 | Gepinnter Image-Digest |
 | 📋 | Application Catalog |
 | 📝 | Configuration Wizard |
+| 🔐 | Installations-Sicherheitsrichtlinie |
 | 📌 | Status |
 
 ## 📌 Status
