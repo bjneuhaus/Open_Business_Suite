@@ -141,6 +141,19 @@ def create_app() -> Flask:
                 errors={**result.errors, **path_errors},
             )
             return render_template("configure.html", result=result)
+        if normalized_config_dir == normalized_data_dir:
+            result = replace(
+                result,
+                is_valid=False,
+                errors={
+                    **result.errors,
+                    "data_dir": (
+                        "Konfigurations- und Datenverzeichnis müssen "
+                        "unterschiedlich sein."
+                    ),
+                },
+            )
+            return render_template("configure.html", result=result)
 
         # The wizard contract guarantees this for a valid result. Keep the
         # invariant explicit at runtime so it also applies under ``python -O``.
