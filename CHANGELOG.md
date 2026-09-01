@@ -230,7 +230,9 @@
   `GET/POST /configure` — `GET` zeigt Formular, `POST` zeigt Bestätigung
   oder Fehlermeldungen; ruft ausschließlich den Wizard-Service auf,
   löst keine Installation aus, speichert nichts
-- `tests/test_opencloud_configuration_wizard.py` (test-first, 10 Tests):
+- `ConfigurationValidationResult` ist einschließlich seines
+  schreibgeschützten `errors`-Mappings tatsächlich unveränderlich
+- `tests/test_opencloud_configuration_wizard.py` (test-first, 11 Tests):
   jede Validierungsregel einzeln sowie mehrere gleichzeitige Fehler und
   Abwesenheit von Secret-Feldern
 - `tests/test_app.py`: Formularverhalten (GET/POST, gültig/ungültig)

@@ -6,6 +6,10 @@ No persistence, no Podman/CommandRunner calls, no installation trigger,
 and no secrets are part of this service.
 """
 
+import dataclasses
+
+import pytest
+
 from sovereign_business_suite.services.opencloud_configuration_wizard import (
     ConfigurationValidationResult,
     OpenCloudConfigurationWizardService,
@@ -157,3 +161,25 @@ def test_result_never_contains_secrets() -> None:
 
     assert not hasattr(result, "admin_password")
     assert not hasattr(result, "password")
+
+
+def test_result_is_truly_immutable_including_errors_mapping() -> None:
+    """The whole result, including the errors mapping, must be immutable.
+
+    @dataclass(frozen=True) alone only prevents reassigning attributes;
+    a plain dict attribute would still be mutable in place. This test
+    ensures errors is a real read-only mapping, not just a frozen
+    reference to a mutable dict.
+    """
+    service = make_service()
+
+    result = service.validate(host_port="abc", config_dir="", data_dir="")
+
+    with pytest.raises((TypeError, AttributeError)):
+        result.errors["host_port"] = "tampered"
+
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        result.is_valid = True
+
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        result.errors = {}

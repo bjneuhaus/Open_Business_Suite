@@ -17,12 +17,14 @@ Der Service liegt in
 
 `OpenCloudConfigurationWizardService.validate(host_port, config_dir, data_dir)`
 nimmt drei Strings entgegen (Formulareingaben sind immer Text) und
-liefert ein unveränderliches `ConfigurationValidationResult` mit:
+liefert ein wirklich unveränderliches `ConfigurationValidationResult` mit.
+Auch das `errors`-Mapping ist schreibgeschützt; weder Attribute noch
+Einträge des Mappings können nach der Erstellung geändert werden:
 
 | Feld | Bedeutung |
 | --- | --- |
 | `is_valid` | `True`, wenn alle drei Felder gültig sind |
-| `errors` | `dict[str, str]`: Feldname → deutschsprachige Fehlermeldung |
+| `errors` | schreibgeschütztes `Mapping[str, str]`: Feldname → deutschsprachige Fehlermeldung |
 | `host_port` | geparster Port als `int`, oder `None` bei Fehler |
 | `config_dir` / `data_dir` | getrimmte Eingabewerte |
 
