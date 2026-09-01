@@ -114,6 +114,11 @@ ssh -L 5000:127.0.0.1:5000 <benutzer>@<vm-adresse>
 Danach im Browser auf dem eigenen Rechner `http://127.0.0.1:5000/`
 öffnen.
 
+Der vollständige manuelle Ablauf für die Ziel-VM — einschließlich
+Repository-Übertragung, Podman-/OpenCloud-Provisioning, einmaliger
+Initialisierung, Flask-Start, SSH-Tunnel, Test-URLs und Teardown — ist in
+[`docs/opencloud-service.md`](docs/opencloud-service.md) dokumentiert.
+
 **Erwartetes visuelles Ergebnis:** Auf `/` erscheint weiterhin eine einfache
 HTML-Seite mit der Überschrift „Sovereign Business Suite“ und einem
 Hinweistext, der die Seite ausdrücklich als Proof of Concept (R004 –
@@ -169,6 +174,8 @@ R003 und folgt in einem späteren Roadmap-Punkt.
   (Branches, Review, welche Dokumente vorher zu lesen sind).
 - 📝 [`CHANGELOG.md`](CHANGELOG.md) – chronologische Liste aller
   projektrelevanten Änderungen.
+- ☁️ [`docs/opencloud-service.md`](docs/opencloud-service.md) – OpenCloud-
+  Provisioning, manueller Start, Test-URLs und Teardown.
 - 🗂️ [`docs/application-catalog.md`](docs/application-catalog.md) –
   technischer Vertrag und Scope des R015-Anwendungskatalogs.
 

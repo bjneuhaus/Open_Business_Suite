@@ -51,54 +51,236 @@ bei jedem Neuaufbau möglicherweise eine andere Version über den
 - Kein `apt`/`sudo`-Aufruf aus dem Python-Paket heraus (Prinzip der
   minimalen Rechte); das erledigt `provision_opencloud.sh` manuell.
 
-## Manueller Bootstrap auf der Ziel-VM
+## Manueller Aufbau und Start auf der Ziel-VM
+
+Dieser Abschnitt beschreibt den vollständigen manuellen Ablauf für einen
+frischen oder wiederholt neu aufgebauten Entwicklungsstand. Die
+Verwaltungsoberfläche und OpenCloud werden nicht öffentlich gebunden; der
+Browserzugriff erfolgt anschließend über einen SSH-Tunnel.
+
+### Voraussetzungen
+
+- Ubuntu-26.04-VM mit SSH-Zugriff und einem Benutzer mit `sudo`-Rechten
+- Repository-Stand aus dem freigegebenen `main`-Branch
+- Netzwerkzugriff der VM auf die Paketquelle und die Container-Registry
+- Das OpenCloud-Admin-Passwort wird ausschließlich auf der VM erzeugt und
+  in `~/.opencloud_admin_pw` mit Modus `0600` gespeichert; es wird niemals in
+  Git, Chat oder Logs übernommen.
+
+### Repository auf die VM übertragen
+
+Die folgenden Befehle laufen zunächst auf dem lokalen Rechner. `git archive`
+überträgt genau den geprüften Commit, ohne lokale `.git`-Metadaten oder andere
+Arbeitsdateien auf die VM zu kopieren:
 
 ```bash
-# 1. Einmalige Infrastruktur-Vorbereitung (liest den gepinnten Digest
-#    aus config/opencloud-image.env und pullt genau dieses Image)
+git checkout main
+git pull --ff-only origin main
+
+ssh training@46.224.69.212 'mkdir -p ~/open-business-suite'
+git archive --format=tar HEAD | \
+  ssh training@46.224.69.212 \
+  'tar -xf - -C ~/open-business-suite'
+```
+
+Bei einer anderen VM sind Benutzer und Adresse entsprechend zu ersetzen.
+
+### Infrastruktur vorbereiten
+
+Die folgenden Befehle laufen auf der Ziel-VM:
+
+```bash
+cd ~/open-business-suite
 bash scripts/provision_opencloud.sh
-
-# 2. Einmalige OpenCloud-Konfiguration (Admin-Passwort wird generiert,
-#    NIE ins Repo oder in Logs geschrieben)
-source config/opencloud-image.env
-IMAGE_REF="${OPENCLOUD_IMAGE_REPOSITORY}@${OPENCLOUD_IMAGE_DIGEST}"
-ADMIN_PW=$(openssl rand -base64 18)
-echo "$ADMIN_PW" > ~/.opencloud_admin_pw
-chmod 600 ~/.opencloud_admin_pw
-podman run --rm \
-  --userns=keep-id \
-  -v ~/opencloud/opencloud-config:/etc/opencloud \
-  -v ~/opencloud/opencloud-data:/var/lib/opencloud \
-  --entrypoint opencloud \
-  "$IMAGE_REF" init \
-  --admin-password "$ADMIN_PW" \
-  --insecure=true \
-  --quiet
 ```
 
-Danach übernimmt `OpenCloudService.install()` (mit einer über
-`default_opencloud_config()` erzeugten Konfiguration) das Starten des
-eigentlichen Servers — ebenfalls mit dem gepinnten Digest.
+Das idempotente Skript installiert bei Bedarf Podman, aktiviert systemd-
+Linger für den Rootless-Betrieb, legt die persistenten Verzeichnisse an und
+lädt das Image aus `config/opencloud-image.env`. Es startet noch keinen
+Container.
 
-## Zugriff
+### OpenCloud einmalig initialisieren
 
-Die Web-Oberfläche ist ausschließlich über `127.0.0.1:9200` auf der VM
-erreichbar. Zugriff von außen ausschließlich per SSH-Tunnel:
+Diesen Schritt nur ausführen, wenn
+`~/opencloud/opencloud-config/opencloud.yaml` noch nicht existiert:
 
 ```bash
-ssh -L 9200:127.0.0.1:9200 <benutzer>@<vm-adresse>
+cd ~/open-business-suite
+umask 077
+
+if [ ! -s "$HOME/.opencloud_admin_pw" ]; then
+    openssl rand -base64 18 > "$HOME/.opencloud_admin_pw"
+fi
+chmod 600 "$HOME/.opencloud_admin_pw"
+
+if [ ! -f "$HOME/opencloud/opencloud-config/opencloud.yaml" ]; then
+    source config/opencloud-image.env
+    IMAGE_REF="${OPENCLOUD_IMAGE_REPOSITORY}@${OPENCLOUD_IMAGE_DIGEST}"
+    ADMIN_PW=$(<"$HOME/.opencloud_admin_pw")
+
+    podman run --rm \
+      --userns=keep-id \
+      -v "$HOME/opencloud/opencloud-config:/etc/opencloud" \
+      -v "$HOME/opencloud/opencloud-data:/var/lib/opencloud" \
+      --entrypoint opencloud "$IMAGE_REF" init \
+      --admin-password "$ADMIN_PW" \
+      --insecure=true \
+      --quiet
+fi
 ```
 
-Danach im Browser: `https://127.0.0.1:9200/` (selbstsigniertes
-Zertifikat im PoC — Browser-Warnung einmalig akzeptieren).
+Der Passwortwert wird bei diesem Ablauf nicht ausgegeben. Ein vorhandenes
+`opencloud.yaml` wird nicht überschrieben.
+
+### OpenCloud starten
+
+Der Start erfolgt über den versionierten `OpenCloudService`; der Service
+verwendet die zentrale Digest-Konfiguration und bindet ausschließlich an
+`127.0.0.1`:
+
+```bash
+cd ~/open-business-suite
+export PYTHONPATH="$PWD/src"
+
+python3 -c '
+import os
+
+from sovereign_business_suite.services.command_runner import CommandRunner
+from sovereign_business_suite.services.opencloud_service import (
+    OpenCloudService,
+    default_opencloud_config,
+)
+
+service = OpenCloudService(
+    default_opencloud_config(
+        os.path.expanduser("~/opencloud/opencloud-config"),
+        os.path.expanduser("~/opencloud/opencloud-data"),
+    ),
+    CommandRunner(),
+)
+result = service.install()
+print(result.returncode, result.succeeded)
+'
+```
+
+Wenn der Container bereits angelegt, aber gestoppt ist, genügt bei einem
+späteren Neustart:
+
+```bash
+podman start opencloud
+```
+
+### Verwaltungsoberfläche starten
+
+Die Flask-Anwendung benötigt eine isolierte Python-Umgebung. Auf einer
+frischen Ubuntu-VM ist dafür einmalig das Paket `python3-venv` erforderlich:
+
+```bash
+cd ~/open-business-suite
+sudo apt-get install -y python3-venv
+python3 -m venv .venv
+.venv/bin/python -m pip install -e .
+.venv/bin/python -m pip install -r requirements.txt
+```
+
+Die Anwendung wird anschließend im Hintergrund und nur auf localhost
+gestartet:
+
+```bash
+nohup .venv/bin/python -m flask \
+  --app sovereign_business_suite.app run \
+  --host 127.0.0.1 \
+  --port 5000 \
+  --no-debugger \
+  --no-reload \
+  > ~/.open-business-suite-admin.log 2>&1 < /dev/null &
+printf "%s\n" "$!" > ~/.open-business-suite-admin.pid
+```
+
+### Zugriff und Test-URLs
+
+Auf dem lokalen Rechner wird der SSH-Tunnel für beide Dienste geöffnet:
+
+```bash
+ssh \
+  -L 5000:127.0.0.1:5000 \
+  -L 9200:127.0.0.1:9200 \
+  training@46.224.69.212
+```
+
+Danach sind diese URLs im lokalen Browser erreichbar:
+
+| Zweck | URL |
+| --- | --- |
+| Admin-Startseite | `http://127.0.0.1:5000/` |
+| Anwendungskatalog | `http://127.0.0.1:5000/catalog` |
+| Konfigurations-Wizard | `http://127.0.0.1:5000/configure` |
+| OpenCloud | `https://127.0.0.1:9200/` |
+
+Die drei Admin-URLs sollten HTTP `200` liefern. OpenCloud sollte HTTPS `200`
+liefern. Beim ersten Aufruf von OpenCloud muss im PoC die Warnung für das
+selbstsignierte Zertifikat einmalig bestätigt werden.
+
+### Manuelle Statusprüfung
+
+Die folgenden `curl`-Befehle können auf der Ziel-VM oder auf dem lokalen
+Rechner bei aktivem SSH-Tunnel ausgeführt werden. `podman`-Befehle werden auf
+der Ziel-VM ausgeführt:
+
+```bash
+curl http://127.0.0.1:5000/
+curl http://127.0.0.1:5000/catalog
+curl http://127.0.0.1:5000/configure
+curl --insecure https://127.0.0.1:9200/
+
+podman ps
+podman port opencloud
+```
+
+Erwartet wird ein laufender Container mit der Bindung
+`127.0.0.1:9200->9200/tcp`; der Flask-Prozess lauscht auf
+`127.0.0.1:5000`.
 
 ## Teardown
 
-`OpenCloudService.remove_container()` entfernt ausschließlich den
-Container. Das Image bleibt erhalten (kein erneuter Download nötig),
-ebenso die Config-/Datenverzeichnisse auf dem Host. Ein vollständiger
-Rückbau (Image- und Datenlöschung) ist kein Bestandteil dieses Slices
-und würde einen expliziten, separat freizugebenden Schritt erfordern.
+Für einen wiederholbaren Entwicklungszyklus kann die laufende Anwendung
+beendet und der OpenCloud-Container entfernt werden:
+
+```bash
+# auf der Ziel-VM: Flask-Prozess beenden, falls er über die PID-Datei gestartet wurde
+if [ -s "$HOME/.open-business-suite-admin.pid" ]; then
+    kill "$(<"$HOME/.open-business-suite-admin.pid")" 2>/dev/null || true
+    rm -f "$HOME/.open-business-suite-admin.pid"
+fi
+
+cd ~/open-business-suite
+export PYTHONPATH="$PWD/src"
+python3 -c '
+import os
+
+from sovereign_business_suite.services.command_runner import CommandRunner
+from sovereign_business_suite.services.opencloud_service import (
+    OpenCloudService,
+    default_opencloud_config,
+)
+
+result = OpenCloudService(
+    default_opencloud_config(
+        os.path.expanduser("~/opencloud/opencloud-config"),
+        os.path.expanduser("~/opencloud/opencloud-data"),
+    ),
+    CommandRunner(),
+).remove_container()
+print(result.returncode, result.succeeded)
+raise SystemExit(0 if result.succeeded else 1)
+'
+```
+
+`remove_container()` entfernt ausschließlich den Container. Das Image bleibt
+erhalten (kein erneuter Download nötig), ebenso die Config-/Datenverzeichnisse
+auf dem Host. Bei Bedarf kann zusätzlich die lokale `.venv` entfernt werden;
+`podman system prune` oder eine Image-Löschung gehört ausdrücklich nicht zu
+diesem Teardown.
 
 ## Tests
 
