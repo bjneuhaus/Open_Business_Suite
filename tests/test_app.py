@@ -18,6 +18,10 @@ from sovereign_business_suite.services.application_catalog_service import (
     ApplicationCatalogEntry,
     ApplicationCatalogService,
 )
+from sovereign_business_suite.services.opencloud_configuration_wizard import (
+    ConfigurationValidationResult,
+    OpenCloudConfigurationWizardService,
+)
 from sovereign_business_suite.services.platform_service import (
     PlatformInfo,
     PlatformService,
@@ -173,3 +177,55 @@ def test_configure_post_does_not_trigger_installation(monkeypatch) -> None:
     )
 
     assert install_calls == []
+
+
+def test_configure_route_renders_wizard_service_output(monkeypatch) -> None:
+    """POST /configure must render exactly what the wizard service returns.
+
+    Explicit web-layer-to-service integration check, mirroring the
+    existing checks for '/' and '/catalog': replaces
+    OpenCloudConfigurationWizardService.validate() with a distinctive
+    stand-in result and asserts that value — not any hardcoded text in
+    the route or template — ends up in the rendered response.
+    """
+    stand_in_result = ConfigurationValidationResult(
+        is_valid=False,
+        errors={"host_port": "Distinctive stand-in host_port error message."},
+        host_port=None,
+        config_dir="/distinctive/stand-in/config-dir",
+        data_dir="/distinctive/stand-in/data-dir",
+    )
+    monkeypatch.setattr(
+        OpenCloudConfigurationWizardService,
+        "validate",
+        lambda self, host_port, config_dir, data_dir: stand_in_result,
+    )
+
+    app = create_app()
+    response = app.test_client().post(
+        "/configure",
+        data={
+            "host_port": "irrelevant",
+            "config_dir": "irrelevant",
+            "data_dir": "irrelevant",
+        },
+    )
+    html = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert stand_in_result.errors["host_port"] in html
+
+
+def test_catalog_page_links_to_configuration_wizard() -> None:
+    """The catalog page must link to the configuration wizard.
+
+    The catalog lists installable applications; from there an
+    administrator needs a way to reach the configuration wizard for
+    the listed OpenCloud entry.
+    """
+    app = create_app()
+
+    response = app.test_client().get("/catalog")
+    html = response.get_data(as_text=True)
+
+    assert 'href="/configure"' in html
