@@ -11,7 +11,9 @@ It does not persist the submitted values, does not trigger an
 installation (R017), and has no progress tracking (R018/R019).
 """
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
+from types import MappingProxyType
 
 #: Minimum port an administrator may configure. Ports below this are
 #: rejected because rootless Podman cannot bind them without extra
@@ -40,10 +42,14 @@ class ConfigurationValidationResult:
     """
 
     is_valid: bool
-    errors: dict[str, str] = field(default_factory=dict)
+    errors: Mapping[str, str] = field(default_factory=dict)
     host_port: int | None = None
     config_dir: str = ""
     data_dir: str = ""
+
+    def __post_init__(self) -> None:
+        """Copy and freeze the errors mapping for true immutability."""
+        object.__setattr__(self, "errors", MappingProxyType(dict(self.errors)))
 
 
 class OpenCloudConfigurationWizardService:
