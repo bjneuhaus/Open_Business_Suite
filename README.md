@@ -108,7 +108,7 @@ Verwaltungsoberfläche). Auf der Ziel-VM erfolgt der Zugriff über einen
 SSH-Tunnel:
 
 ```bash
-ssh -L 5000:127.0.0.1:5000 <benutzer>@<vm-adresse>
+ssh -L 5000:127.0.0.1:5000 username@server
 ```
 
 Danach im Browser auf dem eigenen Rechner `http://127.0.0.1:5000/`

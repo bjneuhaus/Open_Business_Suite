@@ -10,6 +10,9 @@
 - Definition of Done
 
 ### Changed
+- Reale VM-Verbindungsangaben aus Dokumentation und Konfigurationskommentar
+  entfernt; SSH-Beispiele verwenden ausschließlich den neutralen Platzhalter
+  `username@server`
 - Dokumentation um den vollständigen manuellen Ablauf für Aufbau und Test auf
   der Ziel-VM ergänzt (Repository-Übertragung, Provisioning, OpenCloud-
   Initialisierung, Flask-Start, SSH-Tunnel, Test-URLs und Teardown ohne

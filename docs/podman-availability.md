@@ -19,7 +19,7 @@ Bewusst **nicht** Bestandteil von R006:
 
 ## Verifikation auf der Ziel-VM
 
-Auf der PoC-Ziel-VM (`training@<vm-adresse>`, Ubuntu 26.04) ist Podman
+Auf der PoC-Ziel-VM (`username@server`, Ubuntu 26.04) ist Podman
 zum Zeitpunkt von R006 noch nicht installiert (`which podman` liefert
 keinen Treffer). `PodmanService.is_available()` liefert dort also
 korrekt `False`. Die Installation von Podman selbst ist nicht

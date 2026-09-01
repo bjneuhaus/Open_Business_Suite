@@ -77,9 +77,9 @@ Arbeitsdateien auf die VM zu kopieren:
 git checkout main
 git pull --ff-only origin main
 
-ssh training@46.224.69.212 'mkdir -p ~/open-business-suite'
+ssh username@server 'mkdir -p ~/open-business-suite'
 git archive --format=tar HEAD | \
-  ssh training@46.224.69.212 \
+  ssh username@server \
   'tar -xf - -C ~/open-business-suite'
 ```
 
@@ -205,7 +205,7 @@ Auf dem lokalen Rechner wird der SSH-Tunnel für beide Dienste geöffnet:
 ssh \
   -L 5000:127.0.0.1:5000 \
   -L 9200:127.0.0.1:9200 \
-  training@46.224.69.212
+  username@server
 ```
 
 Danach sind diese URLs im lokalen Browser erreichbar:
