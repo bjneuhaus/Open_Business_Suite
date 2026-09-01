@@ -65,17 +65,31 @@ Erfolgsmeldung zeigt.
 `test_install_post_invalid_submission_shows_errors_without_installing`
 prüft, dass ungültige Eingaben dieselbe Fehleranzeige wie `/configure`
 zeigen und `install()` dabei nicht aufgerufen wird.
-`test_install_route_uses_validated_values_for_service_configuration`
-prüft, dass die getrimmten, geparsten Wizard-Werte — nicht die
-Rohtexte des Formulars — an `default_opencloud_config()` und den
-`OpenCloudService`-Konstruktor weitergereicht werden.
+`test_install_route_uses_normalized_values_for_service_configuration`
+prüft, dass die durch `normalize_installation_path()` normalisierten
+Pfade — nicht die Rohtexte des Formulars — an
+`default_opencloud_config()` und den `OpenCloudService`-Konstruktor
+weitergereicht werden.
 `test_install_post_reports_failed_install_result` stellt sicher, dass ein
 fehlgeschlagenes `CommandResult` nur generisch gemeldet wird und sein
 `stderr`-Inhalt nicht in der Antwort erscheint.
 `test_install_post_handles_install_exception_without_leaking_details`
-prüft unerwartete Service-Fehler mit derselben generischen Antwort.
+stellt sicher, dass ein unerwarteter Fehler propagiert (statt
+verschluckt zu werden) und dabei keine sensiblen Details preisgibt.
 `test_install_get_returns_405` prüft, dass `GET /install` nicht
 erlaubt ist.
+
+`test_opencloud_installation_policy.py` prüft
+`normalize_installation_path()` unabhängig von Flask: Pfad außerhalb
+der Allowlist, `..`-Traversal-Escape, vorhandener Symlink nach außen,
+gültiger Unterordner (inkl. `..`-Normalisierung ohne
+Verzeichnisanlage) und dass der Speicherbereich selbst kein gültiger
+Installationspfad ist. Ergänzend prüfen
+`test_install_post_rejects_paths_outside_allowlist_without_installing`,
+`test_install_post_rejects_dot_dot_escape_without_installing` und
+`test_install_post_rejects_symlink_resolving_outside_without_installing`
+auf Route-Ebene, dass solche Pfade ohne Installationsaufruf abgelehnt
+werden.
 
 Die Tests testen bewusst keine weitere Anwendungslogik
 (Authentifizierung, Datenbank, echte Podman-/Container-Aufrufe, Jobs),

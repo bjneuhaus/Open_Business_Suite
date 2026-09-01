@@ -20,6 +20,8 @@ single synchronous ``OpenCloudService.install()`` call — no background
 job, no progress display, and no dedicated result page (R018–R020).
 """
 
+from dataclasses import replace
+
 from flask import Flask, render_template, request
 
 from sovereign_business_suite.services.application_catalog_service import (
@@ -28,6 +30,10 @@ from sovereign_business_suite.services.application_catalog_service import (
 from sovereign_business_suite.services.command_runner import CommandRunner
 from sovereign_business_suite.services.opencloud_configuration_wizard import (
     OpenCloudConfigurationWizardService,
+)
+from sovereign_business_suite.services.opencloud_installation_policy import (
+    INSTALLATION_PATH_ERROR,
+    normalize_installation_path,
 )
 from sovereign_business_suite.services.opencloud_service import (
     OpenCloudService,
@@ -121,24 +127,43 @@ def create_app() -> Flask:
         if not result.is_valid:
             return render_template("configure.html", result=result)
 
-        # is_valid=True guarantees host_port is a parsed int, never None
-        # (see OpenCloudConfigurationWizardService.validate()).
-        assert result.host_port is not None
+        normalized_config_dir = normalize_installation_path(result.config_dir)
+        normalized_data_dir = normalize_installation_path(result.data_dir)
+        path_errors = {}
+        if normalized_config_dir is None:
+            path_errors["config_dir"] = INSTALLATION_PATH_ERROR
+        if normalized_data_dir is None:
+            path_errors["data_dir"] = INSTALLATION_PATH_ERROR
+        if path_errors:
+            result = replace(
+                result,
+                is_valid=False,
+                errors={**result.errors, **path_errors},
+            )
+            return render_template("configure.html", result=result)
+
+        # The wizard contract guarantees this for a valid result. Keep the
+        # invariant explicit at runtime so it also applies under ``python -O``.
+        if result.host_port is None:
+            raise RuntimeError("Gültige Konfiguration ohne Portwert.")
 
         service = OpenCloudService(
             default_opencloud_config(
-                config_dir=result.config_dir,
-                data_dir=result.data_dir,
+                config_dir=str(normalized_config_dir),
+                data_dir=str(normalized_data_dir),
                 host_port=result.host_port,
             ),
             CommandRunner(),
         )
-        try:
-            install_result = service.install()
-        except Exception:
-            # Keep failures generic: command details could contain sensitive
-            # values, and technical output belongs to R019.
-            install_result = None
+        # No blanket exception handling here: CommandRunner.run() never
+        # raises (it converts timeouts and a missing executable into a
+        # CommandResult itself), so install() has no expected failure
+        # path that needs suppressing. An unexpected exception is a bug
+        # and should surface as Flask's default 500 response rather
+        # than being silently swallowed into a generic "success"-shaped
+        # page — Flask's default error handling already avoids leaking
+        # exception details as long as debug/testing mode is off.
+        install_result = service.install()
         return render_template(
             "install.html", result=result, install_result=install_result
         )

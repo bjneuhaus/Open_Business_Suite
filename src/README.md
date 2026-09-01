@@ -63,8 +63,12 @@ Fehlermeldungen. Details siehe
 
 Seit R017 löst `POST /install` in `app.py` einen einmaligen,
 synchronen Installationsstart aus: die Eingaben werden erneut über
-denselben `OpenCloudConfigurationWizardService` geprüft und bei
-gültigen Werten `OpenCloudService.install()` genau einmal aufgerufen.
+denselben `OpenCloudConfigurationWizardService` geprüft und
+zusätzlich durch `services/opencloud_installation_policy.py`
+(`normalize_installation_path()`) gegen eine feste Pfad-Allowlei
+(echter Unterordner von `~/opencloud`, `..`-Traversal und
+Symlink-Escapes werden abgelehnt) geprüft. Erst bei beidem gültigen
+Werten wird `OpenCloudService.install()` genau einmal aufgerufen.
 `templates/install.html` zeigt nur den unmittelbaren Erfolgs- oder
 Fehlschlagzustand, ohne technische Details (`stdout`/`stderr`) —
 diese sind Gegenstand von R019. Details siehe

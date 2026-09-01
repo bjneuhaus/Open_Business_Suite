@@ -279,3 +279,43 @@
 - bewusst nicht Bestandteil: Hintergrundjobs, Threads, Queues, Persistenz,
   Fortschritts-/Loganzeige, umfassende Ergebnisseite, Authentifizierung,
   Datenbank, `opencloud init` oder Passwortbehandlung (R018–R020)
+
+### Fix – R017-Follow-up: Pfad-Sicherheit und Exception-Transparenz
+- neues, schmales Modul `services/opencloud_installation_policy.py`:
+  `normalize_installation_path()` löst `..`-Segmente und vorhandene
+  Symlinks tatsächlich auf und akzeptiert nur ein echtes
+  Unterverzeichnis von `Path.home() / "opencloud"`; der Speicherbereich
+  selbst ist kein gültiger Wert; rein lesend, keine
+  Verzeichnisanlage/-schreibvorgänge
+- bewusst getrennt vom Wizard: R016 bleibt reine Syntaxprüfung ohne
+  Dateisystemzugriff; R017 prüft die tatsächliche Pfadsicherheit
+  zusätzlich und erst kurz vor dem Installationsaufruf
+- `app.py`: `POST /install` ruft `normalize_installation_path()` für
+  `config_dir`/`data_dir` auf; bei Fehlschlag dieselbe Fehleranzeige
+  wie bei `/configure` mit generischer, hostpfad-freier Meldung
+  (`INSTALLATION_PATH_ERROR`), keine Installation; bei Erfolg werden
+  die normalisierten (nicht die rohen) Pfade an
+  `default_opencloud_config()` weitergereicht
+- die pauschale `except Exception`-Unterdrückung um
+  `OpenCloudService.install()` wurde entfernt: `CommandRunner.run()`
+  wirft laut eigenem Vertrag nie, daher hat `install()` keinen
+  erwarteten Fehlerpfad mehr, der maskiert werden müsste; ein
+  unerwarteter Fehler propagiert jetzt als Flasks Standard-500-Antwort
+  (keine Exception-Details ohne Debug-/Testmodus) statt in einer
+  irreführenden generischen Erfolgsseite zu verschwinden
+- `tests/test_opencloud_installation_policy.py` (5 Tests): Pfad
+  außerhalb der Allowlist, `..`-Escape, Symlink nach außen, gültiger
+  Unterordner inkl. `..`-Normalisierung, Speicherbereich selbst
+  ungültig
+- `tests/test_app.py`: 3 neue Route-Ebene-Tests für Allowlist-Verstoß,
+  `..`-Escape und Symlink-Escape (jeweils ohne Installationsaufruf);
+  bestehender Normalisierungs-Test umbenannt/angepasst auf die
+  tatsächlich normalisierten Pfade; Exception-Test erwartet jetzt
+  Propagation statt stiller Maskierung
+- `docs/installation-start.md`, README.md, src/README.md,
+  tests/README.md aktualisiert
+- Server real gestartet und verifiziert: Pfad außerhalb der Allowlist
+  und `..`-Traversal-Escape werden korrekt mit generischer Meldung
+  abgelehnt, kein Installationsaufruf; bestehende Routen `/`,
+  `/catalog`, `/configure`, `GET /install` (405) unverändert
+  funktional
