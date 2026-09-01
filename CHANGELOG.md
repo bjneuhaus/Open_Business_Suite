@@ -217,3 +217,32 @@
 - bewusst nicht Bestandteil: Persistenz, Plugin-/Discovery-Architektur,
   Konfiguration, Installation, Start/Stop, Status, Authentifizierung,
   Hintergrundjobs und Änderungen an VM oder Container
+
+### R016 – Configuration Wizard
+- `services/opencloud_configuration_wizard.py`:
+  `OpenCloudConfigurationWizardService.validate(host_port, config_dir,
+  data_dir) -> ConfigurationValidationResult`; prüft Port (ganze Zahl,
+  1024–65535, keine privilegierten Ports wegen rootless Podman),
+  Verzeichnisse (nicht leer, absolut, `config_dir` ≠ `data_dir`); alle
+  anwendbaren Fehler werden gemeinsam gemeldet; keine Secret-Felder,
+  keine Dateisystem-/Podman-Zugriffe
+- `app.py` und `templates/configure.html`: neue Route
+  `GET/POST /configure` — `GET` zeigt Formular, `POST` zeigt Bestätigung
+  oder Fehlermeldungen; ruft ausschließlich den Wizard-Service auf,
+  löst keine Installation aus, speichert nichts
+- `tests/test_opencloud_configuration_wizard.py` (test-first, 10 Tests):
+  jede Validierungsregel einzeln sowie mehrere gleichzeitige Fehler und
+  Abwesenheit von Secret-Feldern
+- `tests/test_app.py`: Formularverhalten (GET/POST, gültig/ungültig)
+  sowie expliziter Test, dass `POST /configure` niemals
+  `OpenCloudService.install()` aufruft
+- `docs/configuration-wizard.md`, README.md, src/README.md,
+  tests/README.md, docs/README.md aktualisiert
+- Server real gestartet und verifiziert: `GET /configure` → HTTP 200;
+  gültige und ungültige POST-Anfragen liefern die erwarteten
+  Bestätigungs- bzw. Fehlertexte; bestehende Routen `/` und `/catalog`
+  unverändert funktional
+- bewusst nicht Bestandteil: Installationsstart (R017),
+  Fortschrittsanzeige (R018/R019), Persistenz der Eingaben, Prüfung der
+  tatsächlichen Existenz/Beschreibbarkeit der Verzeichnisse auf der
+  Ziel-VM, Erfassung von Secrets

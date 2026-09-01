@@ -17,6 +17,8 @@ Implementierungsdetails bezieht, zum Beispiel:
 - API- oder Konfigurationsreferenzen
 - [`application-catalog.md`](application-catalog.md) – technischer Vertrag
   des R015-Anwendungskatalogs
+- [`configuration-wizard.md`](configuration-wizard.md) – technischer
+  Vertrag und Validierungsregeln des R016-Konfigurations-Wizards
 
 Die konkreten technischen Notizen werden ab den jeweils betroffenen
 Roadmap-Punkten ergänzt.

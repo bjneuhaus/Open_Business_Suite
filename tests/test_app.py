@@ -104,3 +104,72 @@ def test_catalog_route_renders_application_catalog_service_output(monkeypatch) -
     assert stand_in_applications[0].id in html
     assert stand_in_applications[0].name in html
     assert stand_in_applications[0].description in html
+
+
+def test_configure_get_returns_200_with_form() -> None:
+    """GET /configure must render the configuration form."""
+    app = create_app()
+
+    response = app.test_client().get("/configure")
+    html = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert "host_port" in html
+    assert "config_dir" in html
+    assert "data_dir" in html
+
+
+def test_configure_post_valid_submission_shows_confirmation() -> None:
+    """POST /configure with valid values must show a confirmation."""
+    app = create_app()
+
+    response = app.test_client().post(
+        "/configure",
+        data={
+            "host_port": "9200",
+            "config_dir": "/home/training/opencloud/opencloud-config",
+            "data_dir": "/home/training/opencloud/opencloud-data",
+        },
+    )
+    html = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert "9200" in html
+    assert "/home/training/opencloud/opencloud-config" in html
+    assert "erfolgreich" in html.lower() or "gültig" in html.lower()
+
+
+def test_configure_post_invalid_submission_shows_errors() -> None:
+    """POST /configure with invalid values must show validation errors."""
+    app = create_app()
+
+    response = app.test_client().post(
+        "/configure",
+        data={"host_port": "not-a-number", "config_dir": "", "data_dir": ""},
+    )
+    html = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert "ganze Zahl" in html
+    assert "Verzeichnispfad" in html
+
+
+def test_configure_post_does_not_trigger_installation(monkeypatch) -> None:
+    """POST /configure must never call OpenCloudService.install()."""
+    install_calls = []
+    monkeypatch.setattr(
+        "sovereign_business_suite.services.opencloud_service.OpenCloudService.install",
+        lambda self: install_calls.append(True),
+    )
+    app = create_app()
+
+    app.test_client().post(
+        "/configure",
+        data={
+            "host_port": "9200",
+            "config_dir": "/home/training/opencloud/opencloud-config",
+            "data_dir": "/home/training/opencloud/opencloud-data",
+        },
+    )
+
+    assert install_calls == []
