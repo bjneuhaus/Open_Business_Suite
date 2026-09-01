@@ -35,17 +35,21 @@ Fehlschlaghinweis.
    bewusst generischen, hostpfad-freien Meldung aus
    `INSTALLATION_PATH_ERROR`), ebenfalls ohne Installation.
 4. Erst danach wird `default_opencloud_config()` mit den normalisierten
-   Pfaden aufgerufen und daraus ein `OpenCloudService` erstellt, der
-   genau einmal `install()` aufruft.
+   Pfaden aufgerufen. Sind die beiden normalisierten Pfade identisch — auch
+   wenn die Formulareingaben syntaktisch verschieden waren — wird die
+   verständliche bestehende Meldung „Konfigurations- und Datenverzeichnis
+   müssen unterschiedlich sein.“ angezeigt und kein `OpenCloudService.install()`
+   aufgerufen. Nur bei zwei verschiedenen normalisierten Pfaden wird daraus
+   ein `OpenCloudService` erstellt, der genau einmal `install()` aufruft.
 5. Das Ergebnis wird in `templates/install.html` gerendert: bei Erfolg
    ein kurzer Bestätigungstext, bei Fehlschlag ein generischer
    Fehlschlaghinweis **ohne** `stdout`/`stderr`-Details — technische
    Ausgaben sind ausdrücklich Gegenstand von R019 und werden hier
    bewusst nicht angezeigt, da sie potenziell sensible Informationen
-   enthalten könnten. Ein unerwarteter Fehler in `install()` selbst
-   (kein regulärer `CommandResult`-Fehlschlag) wird **nicht**
-   unterdrückt: er propagiert als Flasks Standard-500-Antwort, die ohne
-   aktivierten Debug-/Testmodus keine Exception-Details preisgibt.
+   enthalten könnten. Ein erwarteter Fehler wird dabei als fehlgeschlagenes
+   `CommandResult` generisch dargestellt. Ein unerwarteter Programmfehler in
+   `install()` wird **nicht** unterdrückt: Im Nicht-Debug-Produktionsmodus
+   führt er zu Flask HTTP 500 ohne technische Details in der Antwort.
 
 ## Sicherheit: Pfad-Allowlist gegen Traversal und Symlink-Escapes
 
@@ -65,6 +69,17 @@ ohne Dateisystemzugriff):
   schreibt nichts.
 - Fehlermeldungen (`INSTALLATION_PATH_ERROR`) sind bewusst generisch
   und nennen keine tatsächlichen Host-Pfade.
+
+### Bewusste PoC-Restannahme: Prüfung nicht atomar zum Mount
+
+Die Pfadprüfung ist read-only, aber nicht atomar gegen einen
+gleichprivilegierten lokalen Prozess: Zwischen der Prüfung und dem
+anschließenden Podman-Bind-Mount kann sich ein bereits vorhandener Symlink
+ändern. Für den PoC mit genau einem Administrator ist dieses Restrisiko eine
+akzeptierte Betriebsannahme, **keine Produktionsgarantie**. Eine spätere
+Produktionsumsetzung muss als Roadmap-Kandidat eine race-resistente
+descriptor-/atomare Mount-Übergabe vorsehen. Dieses Follow-up implementiert
+diesen Produktionsansatz ausdrücklich nicht.
 
 `GET /install` ist nicht erlaubt (HTTP 405) — der Installationsstart
 ist eine reine POST-Aktion.
@@ -114,11 +129,17 @@ Bewusst **nicht** Bestandteil:
   prüft, dass die **normalisierten** Pfade (nicht die Rohtexte aus dem
   Formular) an `default_opencloud_config()` und den
   `OpenCloudService`-Konstruktor weitergereicht werden.
+- `test_install_post_rejects_distinct_raw_paths_same_after_dot_dot_normalization`
+  und `test_install_post_rejects_distinct_raw_paths_same_after_internal_symlink`
+  prüfen, dass syntaktisch verschiedene, nach R017-Normalisierung aber
+  identische Pfade mit der bestehenden Meldung abgelehnt werden und
+  `install()` nicht aufgerufen wird.
 - `test_install_post_reports_failed_install_result` stellt sicher,
   dass ein fehlgeschlagenes `CommandResult` nur generisch gemeldet
   wird und dessen `stderr`-Inhalt **nicht** in der Antwort erscheint.
 - `test_install_post_handles_install_exception_without_leaking_details`
-  stellt sicher, dass ein unerwarteter Fehler propagiert (statt
-  verschluckt zu werden) und dabei keine sensiblen Details preisgibt.
+  stellt im Testmodus sicher, dass ein unerwarteter Fehler propagiert
+  (statt verschluckt zu werden); der Produktionsfall mit HTTP 500 ohne
+  Exception-/Secret-/Hostdetails wird separat geprüft.
 - `test_install_get_returns_405` prüft, dass `GET /install` nicht
   erlaubt ist.

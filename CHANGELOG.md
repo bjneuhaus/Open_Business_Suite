@@ -296,6 +296,10 @@
   (`INSTALLATION_PATH_ERROR`), keine Installation; bei Erfolg werden
   die normalisierten (nicht die rohen) Pfade an
   `default_opencloud_config()` weitergereicht
+- `POST /install` lehnt normalisierte Gleichheit von `config_dir` und
+  `data_dir` mit der bestehenden Meldung ab und ruft in diesem Fall
+  `OpenCloudService.install()` nicht auf; Regressionstests decken sowohl
+  `..`-Normalisierung als auch interne Symlink-Auflösung ab
 - die pauschale `except Exception`-Unterdrückung um
   `OpenCloudService.install()` wurde entfernt: `CommandRunner.run()`
   wirft laut eigenem Vertrag nie, daher hat `install()` keinen
@@ -303,12 +307,21 @@
   unerwarteter Fehler propagiert jetzt als Flasks Standard-500-Antwort
   (keine Exception-Details ohne Debug-/Testmodus) statt in einer
   irreführenden generischen Erfolgsseite zu verschwinden
+- die read-only R017-Prüfung ist zwischen Prüfung und Podman-Bind-Mount
+  nicht atomar gegen einen gleichprivilegierten lokalen Prozess; dieses
+  Restrisiko ist im PoC mit genau einem Administrator akzeptiert, aber keine
+  Produktionsgarantie. Eine race-resistente descriptor-/atomare
+  Mount-Übergabe ist als Produktions-Roadmap-Kandidat vorgemerkt und nicht
+  Bestandteil dieses Follow-ups
 - `tests/test_opencloud_installation_policy.py` (5 Tests): Pfad
   außerhalb der Allowlist, `..`-Escape, Symlink nach außen, gültiger
   Unterordner inkl. `..`-Normalisierung, Speicherbereich selbst
   ungültig
 - `tests/test_app.py`: 3 neue Route-Ebene-Tests für Allowlist-Verstoß,
   `..`-Escape und Symlink-Escape (jeweils ohne Installationsaufruf);
+  ergänzt um Regressionstests für normalisierte Pfadgleichheit und den
+  unerwarteten Fehlerfall als detailfreien HTTP 500 im Nicht-Debug-
+  Produktionsmodus;
   bestehender Normalisierungs-Test umbenannt/angepasst auf die
   tatsächlich normalisierten Pfade; Exception-Test erwartet jetzt
   Propagation statt stiller Maskierung
