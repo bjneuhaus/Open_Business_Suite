@@ -255,3 +255,32 @@
   Fortschrittsanzeige (R018/R019), Persistenz der Eingaben, Prüfung der
   tatsächlichen Existenz/Beschreibbarkeit der Verzeichnisse auf der
   Ziel-VM, Erfassung von Secrets
+
+### R017 – Installation Start
+- `app.py`: neue Route `POST /install` — validiert die Eingaben erneut
+  über `OpenCloudConfigurationWizardService` (nie blind über Requests
+  hinweg vertraut), zeigt bei ungültigen Werten dieselbe Fehleranzeige
+  wie `/configure` ohne Installation, und ruft bei gültigen Werten
+  `OpenCloudService.install()` (über `default_opencloud_config()`)
+  genau einmal, synchron auf
+- `templates/install.html`: zeigt nur den unmittelbaren Erfolgs- oder
+  Fehlschlagzustand; technische Details (`stdout`/`stderr`) werden
+  bewusst **nicht** angezeigt — das ist Gegenstand von R019
+- `templates/configure.html`: bei gültiger Prüfung zusätzliches
+  Formular mit Button „Installation starten“, das dieselben geprüften
+  Werte per `POST` an `/install` weiterreicht
+- `GET /install` liefert HTTP 405 (POST-only)
+- kein Hintergrundjob, keine Fortschrittsanzeige (R018), keine
+  eigenständige Ergebnisseite mit Verlauf (R020) — `install()` läuft
+  synchron im Request
+- `tests/test_app.py`: einmaliger `install()`-Aufruf bei gültiger
+  Eingabe, kein Aufruf bei ungültiger Eingabe, korrekte Weitergabe der
+  getrimmten/geparsten Wizard-Werte an Service-Konfiguration, keine
+  `stderr`-Leaks bei Fehlschlag, `GET /install` → 405
+- `docs/installation-start.md`, README.md, src/README.md,
+  tests/README.md, docs/README.md aktualisiert
+- Server real gestartet und verifiziert: `GET /install` → HTTP 405;
+  ungültige POST-Anfrage zeigt Validierungsfehler ohne Installation;
+  gültige POST-Anfrage (ohne lokal installiertes Podman) zeigt den
+  generischen Fehlschlaghinweis ohne technische Details; bestehende
+  Routen `/`, `/catalog`, `/configure` unverändert funktional

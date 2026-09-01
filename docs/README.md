@@ -19,6 +19,8 @@ Implementierungsdetails bezieht, zum Beispiel:
   des R015-Anwendungskatalogs
 - [`configuration-wizard.md`](configuration-wizard.md) – technischer
   Vertrag und Validierungsregeln des R016-Konfigurations-Wizards
+- [`installation-start.md`](installation-start.md) – Ablauf und Umfang
+  des R017-Installationsstarts
 
 Die konkreten technischen Notizen werden ab den jeweils betroffenen
 Roadmap-Punkten ergänzt.

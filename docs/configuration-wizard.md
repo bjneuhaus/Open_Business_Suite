@@ -1,14 +1,16 @@
-# Konfigurations-Wizard (R016)
+# Konfigurations-Wizard und Installationsstart (R016/R017)
 
-Kurze Architekturnotiz zum OpenCloud-Konfigurations-Wizard.
+Kurze Architekturnotiz zum OpenCloud-Konfigurations-Wizard und dem daran
+anschließenden Installationsstart.
 
 ## Zweck
 
 R016 stellt einen serverseitigen Formular-Wizard bereit, mit dem ein
 Administrator Port, Konfigurations- und Datenverzeichnis für eine
 künftige OpenCloud-Installation eingibt und validieren lässt. Es ist
-ausdrücklich **nur ein Validierungsschritt**: keine Installation, keine
-Persistenz, keine Secrets.
+zunächst ausdrücklich **nur ein Validierungsschritt**: keine Installation,
+keine Persistenz, keine Secrets. Nach einer gültigen Bestätigung bietet die
+Ansicht den separaten R017-POST-Schritt `/install` an.
 
 ## Service-Vertrag
 
@@ -53,27 +55,50 @@ Ergebnis an `templates/configure.html`:
 
 - `GET` zeigt ein leeres Formular.
 - `POST` mit gültigen Werten zeigt eine Bestätigung mit den geprüften
-  Werten.
+  Werten und eine separate Startmöglichkeit per `POST /install`.
 - `POST` mit ungültigen Werten zeigt die Formularfelder erneut,
   ergänzt um die jeweiligen Fehlermeldungen.
 
 Die Route selbst enthält keine Validierungslogik — sie vermittelt nur
-zwischen Formular, Service und Template. Es wird **kein**
-`OpenCloudService.install()` oder eine andere Lebenszyklus-Methode
-aufgerufen; ein expliziter Test stellt das sicher.
+zwischen Formular, Service und Template. `POST /configure` ruft **kein**
+`OpenCloudService.install()` auf und speichert nichts.
 
-## Umfang von R016
+## Installationsstart (R017)
 
-Bewusst **nicht** Bestandteil:
+`POST /install` nimmt die drei Formwerte entgegen und ruft
+`OpenCloudConfigurationWizardService.validate()` **vor jedem Start erneut**
+auf. Bei ungültigen Werten wird wieder das Konfigurationsformular mit
+Fehlermeldungen gerendert; `OpenCloudService.install()` wird nicht aufgerufen.
 
-- Installationsstart (R017)
-- Fortschrittsanzeige (R018/R019)
-- Persistenz der eingegebenen Werte (z. B. in `OpenCloudConfig`)
+Bei gültigen Werten verwendet die Route die normalisierten Werte aus dem
+Validierungsergebnis, erzeugt mit
+`default_opencloud_config(config_dir, data_dir, host_port)` eine
+`OpenCloudConfig` und übergibt sie zusammen mit einem `CommandRunner` an
+`OpenCloudService`. Dessen `install()` wird synchron genau einmal aufgerufen.
+Die Antwort zeigt nur, ob der unmittelbare Start ausgelöst werden konnte oder
+fehlgeschlagen ist. stdout/stderr, technische Details und ein Fortschritts-
+oder Ergebnisbildschirm sind ausdrücklich nicht Bestandteil von R017.
+
+Installationsfehler werden kontrolliert mit einer allgemeinen Meldung
+angezeigt. Argumente, Pfade und mögliche Secrets aus technischen Fehlern
+werden nicht in der Antwort ausgegeben; der R017-Ablauf enthält weiterhin
+keine Secret-Felder oder Passwortbehandlung.
+
+## Umfang von R016 und R017
+
+Bewusst **nicht** Bestandteil dieses Web-Orchestrierungs-Slices:
+
+- Fortschrittsanzeige, Hintergrundjobs, Threads, Queues oder Persistenz
+  (R018)
+- technische stdout-/stderr- oder Log-Anzeige (R019)
+- umfassende separate Ergebnis-Seite (R020)
+- `opencloud init`, Authentifizierung, Datenbank oder Passwortbehandlung
 - Prüfung, ob die angegebenen Verzeichnisse auf der Ziel-VM tatsächlich
   existieren oder beschreibbar sind
-- Erfassung oder Anzeige von Secrets (Admin-Passwort bleibt weiterhin
-  ein manueller, dokumentierter Schritt außerhalb der Anwendung, siehe
-  `docs/opencloud-service.md`)
+
+Die automatisierte Suite führt keine echten Podman-/VM-Aufrufe aus. Der
+manuelle Bootstrap und die Infrastruktur-Voraussetzungen bleiben in
+`docs/opencloud-service.md` dokumentiert.
 
 ## Tests
 
@@ -82,5 +107,8 @@ Bewusst **nicht** Bestandteil:
   Validierungsregel, mehrere gleichzeitige Fehler und dass keine
   Secret-Felder existieren.
 - `tests/test_app.py` prüft `GET`/`POST /configure` (Formular,
-  Bestätigung, Fehleranzeige) sowie explizit, dass `POST /configure`
-  niemals `OpenCloudService.install()` aufruft.
+  Bestätigung, Startmöglichkeit und Fehleranzeige) sowie explizit, dass
+  `POST /configure` niemals `OpenCloudService.install()` aufruft.
+  Die R017-Tests prüfen außerdem die erneute Validierung bei `POST /install`,
+  den einmaligen Aufruf mit normalisierten Werten, ungültige Eingaben,
+  kontrollierte Installationsfehler ohne Detailleck und die POST-only-Regel.
