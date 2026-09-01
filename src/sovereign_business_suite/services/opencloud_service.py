@@ -7,11 +7,12 @@ checking its status, and starting/stopping it. All actual command
 execution is delegated to a ``CommandRunner``-compatible object, so
 these tests never invoke a real ``podman`` process.
 
-Scope boundary: this service does not run ``opencloud init`` (the
-one-time configuration bootstrap remains a documented, manual
-provisioning step — see docs/opencloud-service.md) and has no web
-endpoint of its own; a Flask route to trigger these actions is not
-part of this vertical slice.
+Scope boundary: the service remains HTTP-agnostic and does not own a web
+endpoint. The R017 Flask route only orchestrates validation, configuration
+creation, and this service; it does not add installation logic here.
+The service also does not run ``opencloud init`` (the one-time
+configuration bootstrap remains a documented, manual provisioning step —
+see docs/opencloud-service.md) and has no progress/result tracking.
 """
 
 from dataclasses import dataclass

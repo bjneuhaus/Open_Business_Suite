@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <title>OpenCloud-Installation</title>
+</head>
+<body>
+    <main>
+        <h1>OpenCloud-Installation</h1>
+
+        {% if install_result and install_result.succeeded %}
+        <p data-testid="install-success">
+            Der Installationsstart wurde ausgelöst.
+        </p>
+        {% else %}
+        <p data-testid="install-failure">
+            Der Installationsstart konnte nicht ausgelöst werden.
+            Es wurden keine technischen Details angezeigt.
+        </p>
+        {% endif %}
+
+        <p><a href="/configure">Zurück zur Konfiguration</a></p>
+        <p><a href="/catalog">Zurück zum Anwendungskatalog</a></p>
+    </main>
+</body>
+</html>

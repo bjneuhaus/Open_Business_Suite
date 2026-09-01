@@ -255,3 +255,27 @@
   Fortschrittsanzeige (R018/R019), Persistenz der Eingaben, Prüfung der
   tatsächlichen Existenz/Beschreibbarkeit der Verzeichnisse auf der
   Ziel-VM, Erfassung von Secrets
+
+### R017 – Installation Start
+- `app.py` ergänzt den separaten POST-Schritt `/install`; `POST /configure`
+  bleibt weiterhin reine Validierung und löst niemals eine Installation aus
+- `/install` validiert alle Formwerte vor jedem Start erneut über
+  `OpenCloudConfigurationWizardService.validate()`; ungültige Werte führen
+  nur zur Formular-/Fehleranzeige und nicht zu einem Service-Aufruf
+- bei gültigen Werten wird mit
+  `default_opencloud_config(config_dir, data_dir, host_port)` eine
+  `OpenCloudConfig` erzeugt und der vorhandene `OpenCloudService.install()`
+  synchron genau einmal über den bestehenden `CommandRunner` aufgerufen
+- `configure.html` zeigt nach gültiger Prüfung eine separate
+  Installationsschaltfläche; `install.html` meldet ausschließlich den
+  unmittelbaren Start-/Fehlerzustand und gibt keine stdout-/stderr-Details
+  oder Secrets aus
+- fokussierte Route-zu-Service-Integrationstests decken gültige und
+  ungültige Eingaben, normalisierte Werte, einmaligen Aufruf,
+  Installationsfehler, Exception-Sicherheit und die POST-only-Route ab;
+  automatisierte Tests führen keine echten Podman-/VM-Aufrufe aus
+- `docs/installation-start.md` sowie die bestehenden Root-, `src/`,
+  `tests/`- und Konfigurations-Wizard-Dokumentationen aktualisiert
+- bewusst nicht Bestandteil: Hintergrundjobs, Threads, Queues, Persistenz,
+  Fortschritts-/Loganzeige, umfassende Ergebnisseite, Authentifizierung,
+  Datenbank, `opencloud init` oder Passwortbehandlung (R018–R020)

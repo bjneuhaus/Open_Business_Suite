@@ -61,5 +61,14 @@ und `templates/configure.html` zeigen Formular, Bestätigung oder
 Fehlermeldungen. Details siehe
 [`docs/configuration-wizard.md`](../docs/configuration-wizard.md).
 
-Ein Flask-Endpoint zur Steuerung dieser Services ist kein Bestandteil
-dieses Slices und folgt in einem späteren Roadmap-Punkt.
+Seit R017 löst `POST /install` in `app.py` einen einmaligen,
+synchronen Installationsstart aus: die Eingaben werden erneut über
+denselben `OpenCloudConfigurationWizardService` geprüft und bei
+gültigen Werten `OpenCloudService.install()` genau einmal aufgerufen.
+`templates/install.html` zeigt nur den unmittelbaren Erfolgs- oder
+Fehlschlagzustand, ohne technische Details (`stdout`/`stderr`) —
+diese sind Gegenstand von R019. Details siehe
+[`docs/installation-start.md`](../docs/installation-start.md).
+
+Fortschrittsjobs, technische Ausgabe und eine umfassende Ergebnisseite sind
+weiterhin außerhalb des Scopes (R018–R020).

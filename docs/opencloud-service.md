@@ -45,9 +45,10 @@ bei jedem Neuaufbau möglicherweise eine andere Version über den
   `--insecure=true --admin-password <pw>` non-interaktiv ausgeführt;
   das Admin-Passwort wird dabei bewusst nie von der Anwendung selbst
   erzeugt, geloggt oder gespeichert.
-- Kein Flask-Endpoint für `install()`/`status()`/`start()`/`stop()` in
-  diesem Slice — reine Service-Schicht, Web-Anbindung ist ein späterer
-  Schritt.
+- `OpenCloudService` bleibt HTTP-agnostisch; der minimale Web-Anschluss
+  erfolgt seit R017 ausschließlich über `POST /install` in `app.py`.
+  Dieser Schritt übernimmt keine Status-, Start-/Stop-, Fortschritts- oder
+  technische Ausgabe-Funktionalität (R018–R020).
 - Kein `apt`/`sudo`-Aufruf aus dem Python-Paket heraus (Prinzip der
   minimalen Rechte); das erledigt `provision_opencloud.sh` manuell.
 

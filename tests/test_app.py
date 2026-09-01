@@ -18,9 +18,14 @@ from sovereign_business_suite.services.application_catalog_service import (
     ApplicationCatalogEntry,
     ApplicationCatalogService,
 )
+from sovereign_business_suite.services.command_runner import CommandResult
 from sovereign_business_suite.services.opencloud_configuration_wizard import (
     ConfigurationValidationResult,
     OpenCloudConfigurationWizardService,
+)
+from sovereign_business_suite.services.opencloud_service import (
+    OpenCloudConfig,
+    OpenCloudService,
 )
 from sovereign_business_suite.services.platform_service import (
     PlatformInfo,
@@ -141,6 +146,8 @@ def test_configure_post_valid_submission_shows_confirmation() -> None:
     assert "9200" in html
     assert "/home/training/opencloud/opencloud-config" in html
     assert "erfolgreich" in html.lower() or "gültig" in html.lower()
+    assert 'action="/install"' in html
+    assert "Installation starten" in html
 
 
 def test_configure_post_invalid_submission_shows_errors() -> None:
@@ -229,3 +236,166 @@ def test_catalog_page_links_to_configuration_wizard() -> None:
     html = response.get_data(as_text=True)
 
     assert 'href="/configure"' in html
+
+
+def test_install_route_starts_opencloud_once_for_valid_submission(monkeypatch) -> None:
+    """POST /install starts OpenCloud once and reports the immediate state."""
+    install_calls = []
+    monkeypatch.setattr(
+        OpenCloudService,
+        "install",
+        lambda self: install_calls.append(True)
+        or CommandResult(returncode=0, stdout="", stderr=""),
+    )
+    app = create_app()
+
+    response = app.test_client().post(
+        "/install",
+        data={
+            "host_port": "9321",
+            "config_dir": "/srv/opencloud/config",
+            "data_dir": "/srv/opencloud/data",
+        },
+    )
+    html = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert "Installationsstart wurde ausgelöst" in html
+    assert len(install_calls) == 1
+
+
+def test_install_post_invalid_submission_shows_errors_without_installing(
+    monkeypatch,
+) -> None:
+    """POST /install with invalid values must show errors, no install.
+
+    R017 re-validates the submission before installing. Invalid input
+    must never reach OpenCloudService.install().
+    """
+    install_calls = []
+    monkeypatch.setattr(
+        OpenCloudService,
+        "install",
+        lambda self: install_calls.append(True),
+    )
+    app = create_app()
+
+    response = app.test_client().post(
+        "/install",
+        data={"host_port": "not-a-number", "config_dir": "", "data_dir": ""},
+    )
+    html = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert "ganze Zahl" in html
+    assert install_calls == []
+
+
+def test_install_route_uses_validated_values_for_service_configuration(
+    monkeypatch,
+) -> None:
+    """POST /install passes normalized wizard values to the service layer."""
+    expected_config = OpenCloudConfig(
+        image="stand-in-image",
+        container_name="stand-in-opencloud",
+        host_port=9321,
+        config_dir="/srv/opencloud/config",
+        data_dir="/srv/opencloud/data",
+    )
+    factory_calls = []
+    service_configs = []
+
+    def fake_default_config(config_dir, data_dir, host_port):
+        factory_calls.append((config_dir, data_dir, host_port))
+        return expected_config
+
+    class StandInOpenCloudService:
+        def __init__(self, config, command_runner) -> None:
+            service_configs.append(config)
+
+        def install(self):
+            return CommandResult(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(
+        "sovereign_business_suite.app.default_opencloud_config", fake_default_config
+    )
+    monkeypatch.setattr(
+        "sovereign_business_suite.app.OpenCloudService", StandInOpenCloudService
+    )
+
+    app = create_app()
+    response = app.test_client().post(
+        "/install",
+        data={
+            "host_port": " 9321 ",
+            "config_dir": " /srv/opencloud/config ",
+            "data_dir": " /srv/opencloud/data ",
+        },
+    )
+
+    assert response.status_code == 200
+    assert factory_calls == [("/srv/opencloud/config", "/srv/opencloud/data", 9321)]
+    assert service_configs == [expected_config]
+
+
+def test_install_post_reports_failed_install_result(monkeypatch) -> None:
+    """POST /install must show a clear failure message on a bad result."""
+    stand_in_failure = CommandResult(
+        returncode=1, stdout="", stderr="distinctive stand-in failure reason"
+    )
+    monkeypatch.setattr(
+        OpenCloudService,
+        "install",
+        lambda self: stand_in_failure,
+    )
+
+    app = create_app()
+    response = app.test_client().post(
+        "/install",
+        data={
+            "host_port": "9200",
+            "config_dir": "/home/training/opencloud/opencloud-config",
+            "data_dir": "/home/training/opencloud/opencloud-data",
+        },
+    )
+    html = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert "Installationsstart konnte nicht ausgelöst werden" in html
+    assert stand_in_failure.stderr not in html
+
+
+def test_install_post_handles_install_exception_without_leaking_details(
+    monkeypatch,
+) -> None:
+    """Unexpected service errors must become a generic safe response."""
+    secret_detail = "secret-argument-value"
+
+    def fail_install(self):
+        raise RuntimeError(secret_detail)
+
+    monkeypatch.setattr(OpenCloudService, "install", fail_install)
+    app = create_app()
+
+    response = app.test_client().post(
+        "/install",
+        data={
+            "host_port": "9200",
+            "config_dir": "/home/training/opencloud/opencloud-config",
+            "data_dir": "/home/training/opencloud/opencloud-data",
+        },
+    )
+    html = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert "Installationsstart konnte nicht ausgelöst werden" in html
+    assert secret_detail not in html
+
+
+def test_install_get_returns_405() -> None:
+    """GET /install must not be allowed; installation is a POST-only action."""
+    app = create_app()
+
+    response = app.test_client().get("/install")
+
+    assert response.status_code == 405

@@ -24,6 +24,12 @@
                 <li>Konfigurationsverzeichnis: {{ result.config_dir }}</li>
                 <li>Datenverzeichnis: {{ result.data_dir }}</li>
             </ul>
+            <form method="post" action="/install">
+                <input type="hidden" name="host_port" value="{{ result.host_port }}">
+                <input type="hidden" name="config_dir" value="{{ result.config_dir }}">
+                <input type="hidden" name="data_dir" value="{{ result.data_dir }}">
+                <button type="submit">Installation starten</button>
+            </form>
             {% else %}
             <p data-testid="error-summary">
                 Es gibt Probleme mit den Eingaben:

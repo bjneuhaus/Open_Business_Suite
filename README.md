@@ -73,6 +73,11 @@ Vor Änderungen unbedingt [`AGENTS.md`](AGENTS.md) lesen.
   `OpenCloudConfigurationWizardService.validate()`, prüft Port und
   Verzeichnispfade ohne Installation/Persistenz (seit R016, Details in
   [`docs/configuration-wizard.md`](docs/configuration-wizard.md))
+- ▶️ `src/sovereign_business_suite/app.py` und
+  `src/sovereign_business_suite/templates/configure.html` –
+  `GET/POST /configure` zur Validierung sowie die Startmöglichkeit per
+  `POST /install` (R017); `templates/install.html` zeigt nur den
+  unmittelbaren Start-/Fehlerzustand
 - 📜 `scripts/provision_opencloud.sh` – einmaliges, manuelles
   Infrastruktur-Skript (Podman-Paket, systemd-Linger, Verzeichnisse,
   Pull des gepinnten Images)
@@ -126,10 +131,13 @@ Flask-Grundgerüst) kennzeichnet. Der direkte Aufruf von `/catalog` zeigt
 zusätzlich die Überschrift „Anwendungskatalog“ und einen Eintrag für
 „OpenCloud“ mit Beschreibung. Der Aufruf von `/configure` zeigt ein
 Formular für Port, Konfigurations- und Datenverzeichnis; nach dem Absenden
-entweder eine Bestätigung der geprüften Werte oder verständliche
-Fehlermeldungen je Feld. Alle Ansichten sind bewusst schlicht und ohne
-Styling. Authentifizierung, Datenbank, Lebenszyklus-Aktionen, Installation,
-Jobs und ein `/health`-Endpoint sind weiterhin nicht Teil von R015/R016.
+entweder eine Bestätigung der geprüften Werte mit der Startmöglichkeit per
+`POST /install` oder verständliche Fehlermeldungen je Feld. Ein gültiger
+`POST /install` löst den synchronen OpenCloud-Installationsservice aus und
+zeigt nur den unmittelbaren Start-/Fehlerzustand. Alle Ansichten sind bewusst
+schlicht und ohne Styling. Authentifizierung, Datenbank, Fortschrittsanzeige,
+technische Ausgabe und eine umfassende Ergebnisseite sind weiterhin nicht
+Teil von R017 (folgt in R018–R020).
 
 ## 🧹 Code-Qualität
 Seit R003 sind Black (Formatierung), Ruff (Linting) und pytest (Tests) als
@@ -178,6 +186,8 @@ R003 und folgt in einem späteren Roadmap-Punkt.
   Provisioning, manueller Start, Test-URLs und Teardown.
 - 🗂️ [`docs/application-catalog.md`](docs/application-catalog.md) –
   technischer Vertrag und Scope des R015-Anwendungskatalogs.
+- 📝 [`docs/configuration-wizard.md`](docs/configuration-wizard.md) –
+  technischer Vertrag des R016-Wizards und des R017-Installationsstarts.
 
 ## 🔤 Icon-Legende
 | Icon | Bedeutung |
