@@ -69,8 +69,9 @@ zeigen und `install()` dabei nicht aufgerufen wird.
 prüft, dass die getrimmten, geparsten Wizard-Werte — nicht die
 Rohtexte des Formulars — an `default_opencloud_config()` und den
 `OpenCloudService`-Konstruktor weitergereicht werden.
-`test_install_post_reports_failed_install_result` stellt sicher, dass
-sein `stderr`-Inhalt nicht in der Antwort erscheint.
+`test_install_post_reports_failed_install_result` stellt sicher, dass ein
+fehlgeschlagenes `CommandResult` nur generisch gemeldet wird und sein
+`stderr`-Inhalt nicht in der Antwort erscheint.
 `test_install_post_handles_install_exception_without_leaking_details`
 prüft unerwartete Service-Fehler mit derselben generischen Antwort.
 `test_install_get_returns_405` prüft, dass `GET /install` nicht
