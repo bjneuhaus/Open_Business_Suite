@@ -89,7 +89,18 @@ Installationspfad ist. Ergänzend prüfen
 `test_install_post_rejects_dot_dot_escape_without_installing` und
 `test_install_post_rejects_symlink_resolving_outside_without_installing`
 auf Route-Ebene, dass solche Pfade ohne Installationsaufruf abgelehnt
-werden.
+werden. Zwei weitere Route-Regressionstests prüfen, dass syntaktisch
+verschiedene Pfade nach `..`- bzw. interner Symlink-Auflösung als identisch
+erkannt und mit der bestehenden Meldung abgelehnt werden, ohne
+`OpenCloudService.install()` aufzurufen.
+
+R016 bleibt eine read-only Syntaxprüfung ohne Dateisystemzugriff; R017
+erzwingt zusätzlich `~/opencloud` sowie Traversal-/Symlink-Policy und
+vergleicht die normalisierten Werte. Diese Prüfung ist im PoC mit genau einem
+Administrator akzeptiert, aber nicht atomar gegen einen gleichprivilegierten
+lokalen Prozess zwischen Prüfung und Podman-Bind-Mount und damit keine
+Produktionsgarantie. Eine race-resistente descriptor-/atomare Mount-Übergabe
+ist für eine spätere Produktionsumsetzung als Roadmap-Kandidat vorzumerken.
 
 Die Tests testen bewusst keine weitere Anwendungslogik
 (Authentifizierung, Datenbank, echte Podman-/Container-Aufrufe, Jobs),

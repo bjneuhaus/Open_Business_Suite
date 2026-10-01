@@ -144,6 +144,15 @@ schlicht und ohne Styling. Authentifizierung, Datenbank, Fortschrittsanzeige,
 technische Ausgabe und eine umfassende Ergebnisseite sind weiterhin nicht
 Teil von R017 (folgt in R018–R020).
 
+R016 bleibt dabei auf Syntaxprüfung ohne Dateisystemzugriff beschränkt.
+R017 erzwingt zusätzlich `~/opencloud` sowie die Traversal- und
+Symlink-Policy, vergleicht die normalisierten Konfigurations- und Datenpfade
+und lehnt Gleichheit ohne Installationsaufruf ab. Die read-only Prüfung ist im
+PoC mit genau einem Administrator eine akzeptierte Annahme, aber nicht atomar
+gegen einen gleichprivilegierten lokalen Prozess bis zum Podman-Bind-Mount und
+daher keine Produktionsgarantie. Eine race-resistente descriptor-/atomare
+Mount-Übergabe ist für die Produktion als Roadmap-Kandidat vorgemerkt.
+
 ## 🧹 Code-Qualität
 Seit R003 sind Black (Formatierung), Ruff (Linting) und pytest (Tests) als
 reproduzierbare Entwicklungswerkzeuge eingerichtet. Sie sind bewusst von den

@@ -445,6 +445,79 @@ def test_install_route_uses_normalized_values_for_service_configuration(
     assert service_configs == [expected_config]
 
 
+def test_install_post_rejects_distinct_raw_paths_same_after_dot_dot_normalization(
+    monkeypatch, tmp_path
+) -> None:
+    """Equivalent normalized config/data paths must not start installation."""
+    home = tmp_path / "home"
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: home))
+    root = home / "opencloud"
+    same_path = root / "shared"
+    install_calls = []
+    monkeypatch.setattr(
+        OpenCloudService,
+        "install",
+        lambda self: install_calls.append(True),
+    )
+
+    response = (
+        create_app()
+        .test_client()
+        .post(
+            "/install",
+            data={
+                "host_port": "9200",
+                "config_dir": str(root / "nested" / ".." / "shared"),
+                "data_dir": str(same_path),
+            },
+        )
+    )
+
+    assert response.status_code == 200
+    assert (
+        "Konfigurations- und Datenverzeichnis müssen unterschiedlich sein."
+        in response.get_data(as_text=True)
+    )
+    assert install_calls == []
+
+
+def test_install_post_rejects_distinct_raw_paths_same_after_internal_symlink(
+    monkeypatch, tmp_path
+) -> None:
+    """Equivalent paths through an internal symlink must not install."""
+    home = tmp_path / "home"
+    root = home / "opencloud"
+    root.mkdir(parents=True)
+    (root / "config-alias").symlink_to(root / "shared", target_is_directory=True)
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: home))
+    install_calls = []
+    monkeypatch.setattr(
+        OpenCloudService,
+        "install",
+        lambda self: install_calls.append(True),
+    )
+
+    response = (
+        create_app()
+        .test_client()
+        .post(
+            "/install",
+            data={
+                "host_port": "9200",
+                "config_dir": str(root / "config-alias"),
+                "data_dir": str(root / "shared"),
+            },
+        )
+    )
+
+    assert response.status_code == 200
+    assert (
+        "Konfigurations- und Datenverzeichnis müssen unterschiedlich sein."
+        in response.get_data(as_text=True)
+    )
+    assert install_calls == []
+
+
 def test_install_post_reports_failed_install_result(monkeypatch, tmp_path) -> None:
     """POST /install must show a clear failure message on a bad result."""
     home = tmp_path / "home"
@@ -499,6 +572,37 @@ def test_install_post_handles_install_exception_without_leaking_details(
                 "data_dir": str(home / "opencloud" / "data"),
             },
         )
+
+
+def test_install_post_returns_generic_500_for_unexpected_exception_in_production(
+    monkeypatch, tmp_path
+) -> None:
+    """Unexpected errors become detail-free 500 responses outside testing."""
+    secret_detail = "secret-argument-value"
+    host_detail = "internal.example.invalid"
+    home = tmp_path / "home"
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: home))
+
+    def fail_install(self):
+        raise RuntimeError(f"{secret_detail} on {host_detail}")
+
+    monkeypatch.setattr(OpenCloudService, "install", fail_install)
+    app = create_app()
+    app.config.update(DEBUG=False, TESTING=False, PROPAGATE_EXCEPTIONS=False)
+
+    response = app.test_client().post(
+        "/install",
+        data={
+            "host_port": "9200",
+            "config_dir": str(home / "opencloud" / "config"),
+            "data_dir": str(home / "opencloud" / "data"),
+        },
+    )
+
+    assert response.status_code == 500
+    body = response.get_data(as_text=True)
+    assert secret_detail not in body
+    assert host_detail not in body
 
 
 def test_install_get_returns_405() -> None:

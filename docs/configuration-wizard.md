@@ -37,8 +37,9 @@ Einträge des Mappings können nach der Erstellung geändert werden:
   zusätzliche Capabilities nicht binden kann (siehe
   `docs/opencloud-service.md`, Rootless-Betrieb).
 - **Verzeichnisse:** müssen nicht leer sein und mit `/` beginnen
-  (absoluter Pfad). `config_dir` und `data_dir` dürfen nicht identisch
-  sein.
+  (absoluter Pfad). R016 vergleicht die Eingaben syntaktisch; zusätzlich
+  vergleicht R017 vor dem Installationsstart die durch
+  `normalize_installation_path()` normalisierten Werte.
 - Alle anwendbaren Fehler werden gemeinsam zurückgegeben, nicht nur der
   erste gefundene.
 
@@ -79,10 +80,19 @@ Die Antwort zeigt nur, ob der unmittelbare Start ausgelöst werden konnte oder
 fehlgeschlagen ist. stdout/stderr, technische Details und ein Fortschritts-
 oder Ergebnisbildschirm sind ausdrücklich nicht Bestandteil von R017.
 
-Installationsfehler werden kontrolliert mit einer allgemeinen Meldung
-angezeigt. Argumente, Pfade und mögliche Secrets aus technischen Fehlern
-werden nicht in der Antwort ausgegeben; der R017-Ablauf enthält weiterhin
-keine Secret-Felder oder Passwortbehandlung.
+Ein erwarteter Installationsfehler — ein fehlgeschlagenes `CommandResult` —
+wird kontrolliert mit einer allgemeinen Meldung angezeigt. Unerwartete
+Programmfehler werden dagegen nicht verschluckt; im Nicht-Debug-
+Produktionsmodus führen sie zu Flask HTTP 500, ohne Exception-, Secret- oder
+Hostdetails in der Antwort. Der R017-Ablauf enthält weiterhin keine
+Secret-Felder oder Passwortbehandlung.
+
+Die R017-Pfadprüfung ist read-only, aber nicht atomar gegen einen
+gleichprivilegierten lokalen Prozess zwischen Prüfung und Podman-Bind-Mount.
+Für den PoC mit genau einem Administrator ist dieses Restrisiko akzeptiert,
+aber keine Produktionsgarantie. Eine race-resistente descriptor-/atomare
+Mount-Übergabe ist als Produktions-Roadmap-Kandidat vorzumerken; sie wird in
+R017 nicht implementiert.
 
 ## Umfang von R016 und R017
 
@@ -111,4 +121,6 @@ manuelle Bootstrap und die Infrastruktur-Voraussetzungen bleiben in
   `POST /configure` niemals `OpenCloudService.install()` aufruft.
   Die R017-Tests prüfen außerdem die erneute Validierung bei `POST /install`,
   den einmaligen Aufruf mit normalisierten Werten, ungültige Eingaben,
-  kontrollierte Installationsfehler ohne Detailleck und die POST-only-Regel.
+  die Ablehnung normalisiert identischer Pfade ohne Installationsaufruf,
+  kontrollierte `CommandResult`-Fehler ohne Detailleck, unerwartete Fehler
+  als detailfreien HTTP-500-Fall im Produktionsmodus und die POST-only-Regel.
